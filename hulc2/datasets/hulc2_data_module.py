@@ -22,7 +22,7 @@ DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})
 ONE_EP_DATASET_URL = "http://www.informatik.uni-freiburg.de/~meeso/50steps.tar.xz"
 
 
-class PlayDataModule(pl.LightningDataModule):
+class Hulc2DataModule(pl.LightningDataModule):
     def __init__(
         self,
         datasets: DictConfig,
