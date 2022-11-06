@@ -24,7 +24,7 @@ def log_sum_exp(x):
     return m + torch.log(torch.sum(torch.exp(x - m2), dim=axis))
 
 
-class ActionDecoderGripperCamRNN(ActionDecoder):
+class LogictisDecoderRNN(ActionDecoder):
     def __init__(
         self,
         perceptual_features: int,
@@ -47,7 +47,7 @@ class ActionDecoderGripperCamRNN(ActionDecoder):
         gripper_control: bool,
         discrete_gripper: bool,
     ):
-        super(ActionDecoderGripperCamRNN, self).__init__()
+        super(LogictisDecoderRNN, self).__init__()
         self.n_dist = n_mixtures
         self.gripper_control = gripper_control
         self.discrete_gripper = discrete_gripper
