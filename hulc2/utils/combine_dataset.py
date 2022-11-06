@@ -79,7 +79,7 @@ def combine_dataset(input_dirs: List[str], out_dir):
 
 @hydra.main(config_path="../../conf", config_name="utils/combine_dataset")
 def main(cfg):
-    """Check if it is possible to iterate the entire dataset"""
+    """Script to combine several teleop datasets into one"""
     combine_dataset(cfg.src_dirs, cfg.dest)
 
 

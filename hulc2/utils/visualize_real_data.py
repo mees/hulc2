@@ -53,10 +53,6 @@ def viz_data(data_dir):
                 img2 = normalize_depth(img)
                 img2 = cv2.applyColorMap(img2, cv2.COLORMAP_JET)
                 cv2.imshow(key, img2)
-        # assert data["action"] is not None
-        # assert isinstance(data["action"][()], dict)
-        # assert data["robot_state"] is not None
-        # assert isinstance(data["robot_state"][()], dict)
         cv2.waitKey(1)
 
 
