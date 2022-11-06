@@ -2,7 +2,7 @@
 defaults:
   - _self_
 
-src_dirs: 
+src_dirs:
   - "/work/dlclarge2/roseteb-thesis/dataset/validation"
   - "/work/dlclarge2/roseteb-thesis/dataset/erick_data3"
 

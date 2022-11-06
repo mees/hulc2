@@ -30,7 +30,7 @@ sh install.sh
 ```
 If you encounter problems installing pyhash, you might have to downgrade setuptools to a version below 58.
 
-## Download 
+## Download
 ### Task-Agnostic Real World Robot Play Dataset
 We host the multimodal 9 hours of human teleoperated [play dataset on kaggle](https://www.kaggle.com/datasets/oiermees/taco-robot).
 Download the dataset:
@@ -48,6 +48,27 @@ If you want to get started without downloading the whole dataset, use the argume
 
 ### Pre-trained Models
 
+## Training
+**1.** Affordance Model
+
+**2.** Model-free Policy
+```
+python hulc2/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm
+```
+
+## Evaluation
+See detailed inference instructions on the [CALVIN repo](https://github.com/mees/calvin#muscle-evaluation-the-calvin-challenge).
+```
+python hulc++/evaluation/evaluate_policy.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
+```
+Set `--train_folder $HULC2_ROOT/checkpoints/HULC2_D_D` to evaluate our [pre-trained models](#pre-trained-models).
+
+Optional arguments:
+
+- `--checkpoint <PATH/TO/CHECKPOINT>`: by default, the evaluation loads the last checkpoint in the training log directory.
+You can instead specify the path to another checkpoint by adding this to the evaluation command.
+- `--debug`: print debug information and visualize environment.
+
 ## Acknowledgements
 
 This work uses code from the following open-source projects and datasets:
@@ -55,6 +76,10 @@ This work uses code from the following open-source projects and datasets:
 #### CALVIN
 Original:  [https://github.com/mees/calvin](https://github.com/mees/calvin)
 License: [MIT](https://github.com/mees/calvin/blob/main/LICENSE)
+
+#### HULC
+Original:  [https://github.com/mees/hulc](https://github.com/mees/hulc)
+License: [MIT](https://github.com/mees/hulc/blob/main/LICENSE)
 
 #### Sentence-Transformers
 Original:  [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)

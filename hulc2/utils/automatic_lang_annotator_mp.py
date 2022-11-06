@@ -84,7 +84,9 @@ class Annotator(Callback):
 
     @rank_zero_only
     def compute_val_embeddings(self):
-        val_sent = OmegaConf.load(Path(hulc2.__file__).parent / f"../conf/annotations/{self.cfg.rollout_sentences}.yaml")
+        val_sent = OmegaConf.load(
+            Path(hulc2.__file__).parent / f"../conf/annotations/{self.cfg.rollout_sentences}.yaml"
+        )
         embeddings = {}
         for task, ann in val_sent.items():
             embeddings[task] = {}
