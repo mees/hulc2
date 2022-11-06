@@ -11,7 +11,7 @@ from omegaconf import OmegaConf
 import pyhash
 import torch
 
-from hulc2.models.play_lmp import PlayLMP
+from hulc2.models.hulc2 import PlayLMP
 from hulc2.utils.utils import add_text, format_sftp_path, upscale
 
 hasher = pyhash.fnv1_32()
@@ -42,7 +42,7 @@ def get_default_model_and_env(train_folder, dataset_path, checkpoint, env=None, 
         lang_embeddings = LangEmbeddings(dataset.abs_datasets_dir, lang_folder, device=device)
 
     if env is None:
-        rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "conf/callbacks/rollout/default.yaml")
+        rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "conf/callbacks/rollout/hulc++_real_world.yaml")
         env = hydra.utils.instantiate(rollout_cfg.env_cfg, dataset, device, show_gui=False)
 
     checkpoint = format_sftp_path(checkpoint)

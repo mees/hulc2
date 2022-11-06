@@ -1,0 +1,29 @@
+defaults:
+  - perceptual_encoder: gripper_cam
+  - plan_proposal: default
+  - plan_recognition: transformers
+  - distribution:  discrete
+  - visual_goal: default
+  - language_goal: default
+  - action_decoder: hulc_default
+  - optimizer: adam
+  - lr_scheduler: constant
+  - bc_z_lang_decoder: none
+  - mia_lang_discriminator: none
+  - proj_vis_lang: default
+  - /annotations@val_instructions: new_playtable_validation
+
+_target_: hulc2.models.hulc2.Hulc2
+_recursive_: false
+
+kl_beta: ${loss.kl_beta}
+kl_balancing_mix: ${loss.kl_balancing_mix}
+state_recons: false
+state_recon_beta: ${loss.state_recon_beta}
+use_bc_z_auxiliary_loss: false
+bc_z_auxiliary_loss_beta: ${loss.bc_z_auxiliary_loss_beta}
+use_mia_auxiliary_loss: false
+mia_auxiliary_loss_beta: ${loss.mia_auxiliary_loss_beta}
+replan_freq: 30
+use_clip_auxiliary_loss: true
+clip_auxiliary_loss_beta: ${loss.clip_auxiliary_loss_beta}

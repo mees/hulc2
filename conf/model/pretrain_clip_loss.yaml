@@ -1,5 +1,0 @@
-defaults:
-  - default
-  - override clip_proj: default
-_target_: hulc2.models.play_lmp.PretrainPlayLMP
-img_lang_matching_clip: true

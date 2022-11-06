@@ -15,7 +15,7 @@ import torch
 
 import hulc2
 from hulc2.evaluation.utils import imshow_tensor
-from hulc2.models.play_lmp import PlayLMP
+from hulc2.models.hulc2 import PlayLMP
 from hulc2.utils.utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)

@@ -3,7 +3,7 @@ from typing import Dict
 
 import torch
 
-from hulc2.models.play_lmp import PlayLMP
+from hulc2.models.hulc2 import PlayLMP
 
 logger = logging.getLogger(__name__)
 
