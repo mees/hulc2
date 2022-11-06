@@ -3,7 +3,7 @@ defaults:
 _target_: hulc2.rollout.rollout.Rollout
 _recursive_: false
 env_cfg:
-  _target_: vr_env.envs.play_lmp_wrapper.PlayLMPWrapper
+  _target_: hulc2.wrappers.hulc2_wrapper.Hulc2Wrapper
 skip_epochs: 1
 rollout_freq: 5
 video: true
