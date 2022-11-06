@@ -1,16 +1,14 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Sized, Union
+from typing import Dict, List
 
 import hydra
 import numpy as np
-from omegaconf import DictConfig, ListConfig, OmegaConf
+from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.supporters import CombinedLoader
-import torch
-import torch.distributed as dist
-from torch.utils.data import DataLoader, Dataset, DistributedSampler, RandomSampler, Sampler, SequentialSampler
+from torch.utils.data import DataLoader
 import torchvision
 
 import hulc2
@@ -22,7 +20,7 @@ DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})
 ONE_EP_DATASET_URL = "http://www.informatik.uni-freiburg.de/~meeso/50steps.tar.xz"
 
 
-class Hulc2DataModule(pl.LightningDataModule):
+class Hulc2SimdDataModule(pl.LightningDataModule):
     def __init__(
         self,
         datasets: DictConfig,
@@ -43,27 +41,38 @@ class Hulc2DataModule(pl.LightningDataModule):
         if not root_data_path.is_absolute():
             root_data_path = Path(hulc2.__file__).parent / root_data_path
         self.root_data_path = root_data_path
-        # self.training_dir = root_data_path / "training"
-        # self.val_dir = root_data_path / "validation"
+        self.training_dir = root_data_path / "training"
+        self.val_dir = root_data_path / "validation"
         self.shuffle_val = shuffle_val
         self.modalities: List[str] = []
         self.transforms = transforms
-        self.use_shm = ["shm_dataset" in v._target_ for k, v in self.datasets_cfg.items()][0]
+
+        self.use_shm = "shm_dataset" in self.datasets_cfg.lang_dataset._target_
 
     def prepare_data(self, *args, **kwargs):
         # check if files already exist
-        dataset_exist = np.any([len(list(self.root_data_path.glob(extension))) for extension in ["*.npz", "*.pkl"]])
+        dataset_exist = np.any([len(list(self.training_dir.glob(extension))) for extension in ["*.npz", "*.pkl"]])
 
         # download and unpack images
         if not dataset_exist:
-            logger.info(f"downloading dataset to {self.root_data_path}")
-            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.root_data_path)
+            if "CI" not in os.environ:
+                print(f"No dataset found in {self.training_dir}.")
+                print("For information how to download to full CALVIN dataset, please visit")
+                print("https://github.com/mees/calvin/tree/main/dataset")
+                print("Do you wish to download small debug dataset to continue training?")
+                s = input("YES / no")
+                if s == "no":
+                    exit()
+            logger.info(f"downloading dataset to {self.training_dir} and {self.val_dir}")
+            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.training_dir)
+            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.val_dir)
 
         if self.use_shm:
-            train_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.root_data_path, split="training")
+            # When using shared memory dataset, initialize lookups
+            train_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.training_dir)
             train_shm_lookup = train_shmem_loader.load_data_in_shared_memory()
 
-            val_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.root_data_path, split="validation")
+            val_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.val_dir)
             val_shm_lookup = val_shmem_loader.load_data_in_shared_memory()
 
             save_lang_data(train_shm_lookup, val_shm_lookup)
@@ -72,13 +81,11 @@ class Hulc2DataModule(pl.LightningDataModule):
         transforms = load_dataset_statistics(self.root_data_path, self.transforms)
 
         self.train_transforms = {
-            cam: [hydra.utils.instantiate(transform, _convert_="partial") for transform in transforms.train[cam]]
-            for cam in transforms.train
+            cam: [hydra.utils.instantiate(transform) for transform in transforms.train[cam]] for cam in transforms.train
         }
 
         self.val_transforms = {
-            cam: [hydra.utils.instantiate(transform, _convert_="partial") for transform in transforms.val[cam]]
-            for cam in transforms.val
+            cam: [hydra.utils.instantiate(transform) for transform in transforms.val[cam]] for cam in transforms.val
         }
         self.train_transforms = {key: torchvision.transforms.Compose(val) for key, val in self.train_transforms.items()}
         self.val_transforms = {key: torchvision.transforms.Compose(val) for key, val in self.val_transforms.items()}
@@ -89,11 +96,9 @@ class Hulc2DataModule(pl.LightningDataModule):
 
         for _, dataset in self.datasets_cfg.items():
             train_dataset = hydra.utils.instantiate(
-                dataset, datasets_dir=self.root_data_path, transforms=self.train_transforms, split="training"
+                dataset, datasets_dir=self.training_dir, transforms=self.train_transforms
             )
-            val_dataset = hydra.utils.instantiate(
-                dataset, datasets_dir=self.root_data_path, transforms=self.val_transforms, split="validation"
-            )
+            val_dataset = hydra.utils.instantiate(dataset, datasets_dir=self.val_dir, transforms=self.val_transforms)
             if self.use_shm:
                 train_dataset.set_lang_data(train_shm_lookup)
                 val_dataset.set_lang_data(val_shm_lookup)

@@ -164,7 +164,10 @@ class NpzDataset(BaseDataset):
             print("Exception, trying to load lang data from: ", abs_datasets_dir / "auto_lang_ann.npy")
             lang_data = np.load(abs_datasets_dir / "auto_lang_ann.npy", allow_pickle=True).reshape(-1)[0]
 
-        ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
+        if Path(abs_datasets_dir / "ep_start_end_ids.npy").is_file():
+            ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
+        else:
+            ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
         lang_data = get_split_sequences(ep_start_end_ids, lang_data)
 
         ep_start_end_ids = lang_data["info"]["indx"]  # each of them are 64
@@ -200,8 +203,10 @@ class NpzDataset(BaseDataset):
 
         episode_lookup = []
 
-        # ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
-        ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
+        if Path(abs_datasets_dir / "ep_start_end_ids.npy").is_file():
+            ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
+        else:
+            ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
 
         logger.info(f'Found "ep_start_end_ids.npy" with {len(ep_start_end_ids)} episodes.')
         for start_idx, end_idx in ep_start_end_ids:

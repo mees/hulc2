@@ -3,6 +3,7 @@ import logging
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 
 import hydra
+from pathlib import Path
 import numpy as np
 from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
@@ -127,7 +128,7 @@ class Hulc2(pl.LightningModule):
         self.st_recon_beta = state_recon_beta
 
         self.kl_beta = kl_beta
-        self.kl_balacing_mix = kl_balancing_mix
+        self.kl_balancing_mix = kl_balancing_mix
         self.state_recons = state_recons
         self.st_recon_beta = state_recon_beta
 
@@ -678,22 +679,23 @@ class Hulc2(pl.LightningModule):
             val_dataset = self.trainer.datamodule.val_datasets["lang"]  # type: ignore
             self.val_dataset = val_dataset
 
-            start_end_ids = get_start_end_ids(train_dataset.abs_datasets_dir)
-            lang_data = np.load(
-                train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-            ).item()
-            lang_data_train = get_split_sequences(start_end_ids["training"], lang_data, asarray=False)
-            self.lang_data_val = get_split_sequences(start_end_ids["validation"], lang_data, asarray=False)
-
-            # lang_data_train = np.load(
-            #     train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-            # ).item()
-            # self.lang_data_val = np.load(
-            #     val_dataset.abs_datasets_dir / val_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-            # ).item()
-            # lang_embeddings_val = np.load(
-            #     val_dataset.abs_datasets_dir / val_dataset.lang_folder / "embeddings.npy", allow_pickle=True
-            # ).item()
+            if Path(train_dataset.abs_datasets_dir / "split.json").is_file():
+                start_end_ids = get_start_end_ids(train_dataset.abs_datasets_dir)
+                lang_data = np.load(
+                    train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
+                ).item()
+                lang_data_train = get_split_sequences(start_end_ids["training"], lang_data, asarray=False)
+                self.lang_data_val = get_split_sequences(start_end_ids["validation"], lang_data, asarray=False)
+            else:
+                lang_data_train = np.load(
+                    train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
+                ).item()
+                self.lang_data_val = np.load(
+                    val_dataset.abs_datasets_dir / val_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
+                ).item()
+                lang_embeddings_val = np.load(
+                    val_dataset.abs_datasets_dir / val_dataset.lang_folder / "embeddings.npy", allow_pickle=True
+                ).item()
             train_lang_instructions = list(set(lang_data_train["language"]["ann"]))
             train_lang_ids = [
                 lang_data_train["language"]["ann"].index(instruction) for instruction in train_lang_instructions
