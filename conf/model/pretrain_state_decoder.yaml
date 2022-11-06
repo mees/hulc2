@@ -1,0 +1,5 @@
+defaults:
+  - default
+
+_target_: hulc2.models.play_lmp.PretrainPlayLMP
+state_reconstruction: true

@@ -1,0 +1,12 @@
+defaults:
+  - perceptual_encoder: gripper_cam
+  - plan_recognition: transformers
+  - distribution:  discrete
+  - language_encoder: none
+  - language_goal: default
+  - optimizer: adam
+  - lr_scheduler: constant
+  - clip_proj: default
+  - /annotations@val_instructions: new_playtable_validation
+_target_: hulc2.models.pretrain.PretrainPlayLMP
+_recursive_: false
