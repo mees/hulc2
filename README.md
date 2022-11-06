@@ -30,6 +30,23 @@ sh install.sh
 ```
 If you encounter problems installing pyhash, you might have to downgrade setuptools to a version below 58.
 
+## Download 
+### Task-Agnostic Real World Robot Play Dataset
+We host the multimodal 9 hours of human teleoperated [play dataset on kaggle](https://www.kaggle.com/datasets/oiermees/taco-robot).
+Download the dataset:
+```
+cd $HULC2_ROOT/dataset
+kaggle datasets download -d oiermees/taco-robot
+```
+### CALVIN Dataset
+If you want to train on the simulated [CALVIN](https://github.com/mees/calvin) dataset, choose a split with:
+```bash
+cd $HULC2_ROOT/dataset
+sh download_data.sh D | ABC | ABCD | debug
+```
+If you want to get started without downloading the whole dataset, use the argument `debug` to download a small debug dataset (1.3 GB).
+
+### Pre-trained Models
 
 ## Acknowledgements
 

@@ -6,6 +6,7 @@ hydra-colorlog
 matplotlib
 opencv-python
 omegaconf
+kaggle
 plotly
 ftfy
 pyhash
