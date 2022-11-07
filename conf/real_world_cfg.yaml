@@ -1,4 +1,5 @@
 defaults:
+  - _self_
   - callbacks: real_world_default
   - datamodule: real_world_default
   - model: real_world_hulc++

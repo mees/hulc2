@@ -52,8 +52,13 @@ If you want to get started without downloading the whole dataset, use the argume
 **1.** Affordance Model
 
 **2.** Model-free Policy
+By default a training for the CALVIN simulated environment will be started:
 ```
-python hulc2/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset datamodule/datasets=vision_lang_shm
+python hulc2/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset
+```
+To train the policy on the real world dataset, you can change the default config file:
+```
+python hulc2/training.py trainer.gpus=-1 datamodule.root_data_dir=path/to/dataset --config-name real_world_cfg
 ```
 
 ## Evaluation
