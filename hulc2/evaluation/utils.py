@@ -42,7 +42,7 @@ def get_default_model_and_env(train_folder, dataset_path, checkpoint, env=None, 
         lang_embeddings = LangEmbeddings(dataset.abs_datasets_dir, lang_folder, device=device)
 
     if env is None:
-        rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "conf/callbacks/rollout/hulc++_real_world.yaml")
+        rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "conf/callbacks/rollout/default.yaml")
         env = hydra.utils.instantiate(rollout_cfg.env_cfg, dataset, device, show_gui=False)
 
     checkpoint = format_sftp_path(checkpoint)

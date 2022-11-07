@@ -25,7 +25,7 @@ from hulc2.utils.utils import (
 logger = logging.getLogger(__name__)
 
 
-@hydra.main(config_path="../conf", config_name="config")
+@hydra.main(config_path="../conf", config_name="calvin_cfg")
 def train(cfg: DictConfig) -> None:
     """
     This is called to start a training.

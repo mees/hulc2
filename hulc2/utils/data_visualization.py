@@ -33,7 +33,7 @@ def visualize(data):
     plt.show()
 
 
-@hydra.main(config_path="../../conf", config_name="hulc++_real_world.yaml")
+@hydra.main(config_path="../../conf", config_name="default.yaml")
 def train(cfg: DictConfig) -> None:
     # sets seeds for numpy, torch, python.random and PYTHONHASHSEED.
     seed_everything(cfg.seed)

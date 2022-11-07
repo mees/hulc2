@@ -1,7 +1,7 @@
 defaults:
-  - callbacks: default_calvin
+  - callbacks: calvin_default
   - datamodule: calvin_default
-  - model: hulc++_calvin
+  - model: calvin_hulc++
   - loss: default
   - training: default_training
   - trainer: play_trainer
