@@ -45,6 +45,7 @@ class BaseDataset(Dataset):
         min_window_size: int = 16,
         max_window_size: int = 32,
         pad: bool = True,
+        data_percent: float = 1.0,
         split: str = "training",
     ):
         self.observation_space = obs_space
@@ -71,6 +72,7 @@ class BaseDataset(Dataset):
         self.validation = "validation" in split
         assert self.abs_datasets_dir.is_dir()
         self.episode_lookup: List[int] = []
+        self.data_percent = 1.0 if self.validation else data_percent
         logger.info(f"loading dataset at {self.abs_datasets_dir}")
         logger.info("finished loading dataset")
 

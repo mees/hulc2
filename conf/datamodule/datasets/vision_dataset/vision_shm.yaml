@@ -9,3 +9,4 @@ obs_space: ${datamodule.observation_space}
 pad: true
 lang_folder: "lang_paraphrase-MiniLM-L3-v2"
 num_workers: 2
+data_percent: ${data_percent}

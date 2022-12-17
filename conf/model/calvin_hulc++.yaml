@@ -4,7 +4,7 @@ defaults:
   - plan_recognition: transformers
   - distribution:  discrete
   - visual_goal: default
-  - language_encoder: none
+  - language_encoder: sbert
   - language_goal: default
   - action_decoder: logistic_decoder_rnn_calvin
   - optimizer: adam
@@ -16,6 +16,15 @@ defaults:
 
 _target_: hulc2.models.hulc2.Hulc2
 _recursive_: false
+
+aff_model:
+  transfer: False
+  static_cam:
+    train_folder: ???
+    model_name: val_err.ckpt
+  gripper_cam:
+    train_folder: ???
+    model_name: val_err.ckpt
 
 kl_beta: ${loss.kl_beta}
 kl_balancing_mix: ${loss.kl_balancing_mix}

@@ -216,7 +216,8 @@ def rollout(env, model, task_oracle, args, subtask, lang_embeddings, val_annotat
     # get lang annotation for subtask
     lang_annotation = val_annotations[subtask][0]
     # get language goal embedding
-    goal = lang_embeddings.get_lang_goal(lang_annotation)
+    # goal = lang_embeddings.get_lang_goal(lang_annotation)
+    goal = {"lang": [lang_annotation]}
     model.reset()
     start_info = env.get_info()
 

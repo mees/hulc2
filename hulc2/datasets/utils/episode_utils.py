@@ -144,7 +144,7 @@ def process_language(episode: Dict[str, np.ndarray], transforms: Dict, with_lang
         lang = torch.from_numpy(episode["language"]).float()
         if "language" in transforms:
             lang = transforms["language"](lang)
-        seq_lang["lang"] = lang
+        # seq_lang["lang"] = episode["language"]
     return seq_lang
 
 
@@ -173,7 +173,8 @@ def load_dataset_statistics(root_data_path, transforms):
     Returns:
         transforms: potentially updated transforms
     """
-    paths = {"train": root_data_path, "val": root_data_path}
+    paths = {"train": root_data_path,
+            "val": root_data_path}
     for dataset_type in ["train", "val"]:
         try:
             filepath = Path(paths[dataset_type]) / "statistics.yaml"

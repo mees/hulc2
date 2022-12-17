@@ -13,7 +13,8 @@ import signal
 import numpy as np
 from pytorch_lightning import Callback, LightningModule, Trainer
 from tqdm import tqdm
-
+from hulc2.utils.data_utils import get_split_data
+from hulc2.utils.split_dataset import get_split_sequences
 from hulc2.datasets.shm_dataset import ShmDataset
 from hulc2.utils.split_dataset import get_split_sequences, get_start_end_ids
 
@@ -41,6 +42,7 @@ def check_shm_lookup_exists(dataset_type):
 
 class SharedMemoryLoader:
     def __init__(self, datasets_cfg, dataset_dir, split):
+        self.ep_ids_file = "ep_start_end_ids.npy"
         self.split = split
         self.obs_space = datasets_cfg.lang_dataset.obs_space
         self.dataset_dir = dataset_dir
@@ -50,6 +52,7 @@ class SharedMemoryLoader:
         self.naming_pattern, self.n_digits = self.lookup_naming_pattern()
         self.min_window_size_vision = datasets_cfg.vision_dataset.min_window_size
         self.min_window_size_lang = datasets_cfg.lang_dataset.min_window_size
+        self.data_percent = 1.0 if self.dataset_type=="val" else datasets_cfg.lang_dataset.data_percent
         self.n_proc = 8
 
     def worker_process(self, proc_num, ep_start_end_ids, offsets, shmem, lang_ep_start_end_ids, return_dict):
@@ -78,9 +81,10 @@ class SharedMemoryLoader:
         lang_data = np.load(self.dataset_dir / self.lang_folder / "auto_lang_ann.npy", allow_pickle=True).item()
         ep_start_end_ids = get_start_end_ids(self.dataset_dir)[self.split]
         lang_data = get_split_sequences(ep_start_end_ids, lang_data)
+        ep_start_end_ids, lang_data = get_split_data(ep_start_end_ids, self.data_percent, lang_data)
 
         lang_ep_start_end_ids = np.array(lang_data["info"]["indx"])  # each of them are 64
-        lang_ann = np.asarray(lang_data["language"]["emb"])
+        lang_ann = lang_data["language"]["ann"]
         shmem, shapes, sizes, dtypes, shmem_lookup = self.create_shmem(ep_start_end_ids)
 
         if shmem_lookup is not None:

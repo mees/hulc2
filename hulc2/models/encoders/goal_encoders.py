@@ -4,7 +4,6 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-
 class VisualGoalEncoder(nn.Module):
     def __init__(
         self,
@@ -39,6 +38,7 @@ class VisualGoalEncoder(nn.Module):
 class LanguageGoalEncoder(nn.Module):
     def __init__(
         self,
+        lang_net,
         in_features: int,
         hidden_size: int,
         latent_goal_features: int,
@@ -47,6 +47,7 @@ class LanguageGoalEncoder(nn.Module):
         activation_function: str,
     ):
         super().__init__()
+        self.lang_net = lang_net
         self.l2_normalize_output = l2_normalize_goal_embeddings
         self.act_fn = getattr(nn, activation_function)()
         self.mlp = nn.Sequential(
@@ -61,7 +62,11 @@ class LanguageGoalEncoder(nn.Module):
         )
         self.ln = nn.LayerNorm(latent_goal_features)
 
-    def forward(self, x: torch.Tensor) -> torch.Tensor:
+    def forward(self, x: list) -> torch.Tensor:
+        # Takes a list of strings and returns the embeddings
+        if self.lang_net is not None:
+            x = self.lang_net(x)
+
         x = self.mlp(x)
         if self.l2_normalize_output:
             x = F.normalize(x, p=2, dim=1)

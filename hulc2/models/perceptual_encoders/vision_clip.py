@@ -4,7 +4,7 @@ from torch import nn
 import torch.nn.functional as F
 import torchvision
 
-from hulc2.models.perceptual_encoders.clip import build_model, load_clip, tokenize
+from lfp.models.perceptual_encoders.clip import build_model, load_clip, tokenize
 
 
 class VisionClip(nn.Module):

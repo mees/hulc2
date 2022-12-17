@@ -7,7 +7,8 @@ import re
 from typing import Dict, List, Optional, Tuple
 
 import numpy as np
-
+from hulc2.utils.data_utils import get_split_data
+from hulc2.utils.split_dataset import get_split_sequences, get_start_end_ids
 from hulc2.datasets.base_dataset import BaseDataset, get_validation_window_size
 from hulc2.datasets.utils.episode_utils import (
     get_state_info_dict,
@@ -36,6 +37,7 @@ class NpzDataset(BaseDataset):
     """
 
     def __init__(self, *args, skip_frames: int = 0, n_digits: Optional[int] = None, aux_lang_loss_window: int = 1, pretrain: bool = False, **kwargs):  # type: ignore
+        self.ep_ids_file = "ep_start_end_ids.npy"
         super().__init__(*args, **kwargs)
         self.skip_frames = skip_frames
         self.aux_lang_loss_window = aux_lang_loss_window
@@ -108,7 +110,7 @@ class NpzDataset(BaseDataset):
         episodes = [self.load_episode(self.get_episode_name(file_idx)) for file_idx in range(start_idx, end_idx)]
         episode = {key: np.stack([ep[key] for ep in episodes]) for key in keys}
         if self.with_lang:
-            episode["language"] = self.lang_ann[self.lang_lookup[idx]][0]  # TODO check  [0]
+            episode["language"] = self.lang_ann[self.lang_lookup[idx]]
         return episode
 
     def get_sequences(self, idx: int, window_size: int) -> Dict:
@@ -164,14 +166,15 @@ class NpzDataset(BaseDataset):
             print("Exception, trying to load lang data from: ", abs_datasets_dir / "auto_lang_ann.npy")
             lang_data = np.load(abs_datasets_dir / "auto_lang_ann.npy", allow_pickle=True).reshape(-1)[0]
 
-        if Path(abs_datasets_dir / "ep_start_end_ids.npy").is_file():
-            ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
-        else:
-            ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
+        # load data
+        # play_ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
+
+        ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
         lang_data = get_split_sequences(ep_start_end_ids, lang_data)
+        _, lang_data = get_split_data(ep_start_end_ids, self.data_percent, lang_data)
 
         ep_start_end_ids = lang_data["info"]["indx"]  # each of them are 64
-        lang_ann = lang_data["language"]["emb"]  # length total number of annotations
+        lang_ann = lang_data["language"]["ann"]  # length total number of annotations
         lang_lookup = []
         for i, (start_idx, end_idx) in enumerate(ep_start_end_ids):
             if self.pretrain:
@@ -203,12 +206,11 @@ class NpzDataset(BaseDataset):
 
         episode_lookup = []
 
-        if Path(abs_datasets_dir / "ep_start_end_ids.npy").is_file():
-            ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
-        else:
-            ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
+        # ep_start_end_ids = np.load(abs_datasets_dir / "ep_start_end_ids.npy")
+        ep_start_end_ids = get_start_end_ids(abs_datasets_dir)[self.split]
+        ep_start_end_ids, _ = get_split_data(ep_start_end_ids, self.data_percent)
 
-        logger.info(f'Found "ep_start_end_ids.npy" with {len(ep_start_end_ids)} episodes.')
+        logger.info(f'Found "split.json" with {len(ep_start_end_ids)} episodes.')
         for start_idx, end_idx in ep_start_end_ids:
             assert end_idx > self.max_window_size
             for idx in range(start_idx, end_idx + 1 - self.min_window_size):

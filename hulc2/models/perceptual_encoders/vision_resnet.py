@@ -11,11 +11,13 @@ class VisionResnet(nn.Module):
         net = models.resnet18(pretrained=True)
         # Remove the last fc layer, and rebuild
         modules = list(net.children())[:-1]
-        if freeze_backbone:
-            for param in net.parameters():
-                param.requires_grad = False
-            # for param in net.layer4.parameters():
-            #     param.requires_grad = True
+        for param in net.parameters():
+            param.requires_grad = False
+
+        # Only finetune last layer
+        if not freeze_backbone:
+            for param in net.layer4.parameters():
+                param.requires_grad = True
         self.net = nn.Sequential(*modules)
         self.fc1 = nn.Linear(512, 256)
         self.fc2 = nn.Linear(256, visual_features)

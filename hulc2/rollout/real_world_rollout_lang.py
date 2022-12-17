@@ -8,7 +8,6 @@ from omegaconf import OmegaConf
 from robot_io.utils.utils import FpsController
 
 from hulc2.evaluation.utils import imshow_tensor
-from hulc2.models.encoders.language_network import SBert
 from hulc2.models.hulc2 import PlayLMP
 from hulc2.utils.utils import format_sftp_path, get_checkpoints_for_epochs
 from hulc2.wrappers.panda_lfp_wrapper import PandaLfpWrapper
@@ -18,19 +17,9 @@ def load_model(cfg):
     train_cfg_path = Path(cfg.train_folder) / ".hydra/config.yaml"
     train_cfg_path = format_sftp_path(train_cfg_path)
     train_cfg = OmegaConf.load(train_cfg_path)
-    lang_folder = train_cfg.datamodule.datasets.lang_dataset.lang_folder
-    lang_model_string = lang_folder.split("_")[1]
-    lang_encoder = SBert(lang_model_string)
     train_cfg["datamodule"]["datasets"].pop("lang_dataset", None)
 
-    # we don't want to use shm dataset for evaluation
-    # since we don't use the trainer during inference, manually set up data_module
-    # vision_lang_folder = train_cfg.datamodule.datasets.vision_dataset.lang_folder
-    # lang_lang_folder = train_cfg.datamodule.datasets.lang_dataset.lang_folder
-    # train_cfg.datamodule.datasets = cfg.datamodule.datasets
-    # train_cfg.datamodule.datasets.vision_dataset.lang_folder = vision_lang_folder
-    # train_cfg.datamodule.datasets.lang_dataset.lang_folder = lang_lang_folder
-
+    train_cfg.datamodule.datasets.vision_dataset = cfg.datamodule.datasets.vision_dataset
     train_cfg.datamodule.root_data_dir = cfg.datamodule.root_data_dir
     data_module = hydra.utils.instantiate(train_cfg.datamodule, num_workers=0)
     print(train_cfg.datamodule)
@@ -52,16 +41,14 @@ def load_model(cfg):
         model.action_decoder._setup_action_bounds(train_cfg.datamodule.root_data_dir, None, None, True)
     model = model.cuda()
     print("Model loaded!")
-    return model, lang_encoder, dataset
+    return model, dataset
 
 
-def lang_rollout(model, lang_encoder, env, dataset):
+def lang_rollout(model, env):
     print("Type your instruction which the robot will try to follow")
-
     while 1:
         lang_input = [input("What should I do? \n")]
-        lang_embedding = lang_encoder(lang_input)
-        goal = {"lang": lang_embedding.squeeze(0)}
+        goal = {"lang": lang_input}
         print("sleeping 5 seconds...)")
         time.sleep(6)
         rollout(env, model, goal)
@@ -82,16 +69,16 @@ def rollout(env, model, goal, ep_len=500):
             return
 
 
-@hydra.main(config_path="../../conf", config_name="inference_real")
+@hydra.main(config_path="../conf", config_name="inference_real")
 def main(cfg):
     # load robot
     robot = hydra.utils.instantiate(cfg.robot)
     env = hydra.utils.instantiate(cfg.env, robot=robot)
 
-    model, lang_encoder, dataset = load_model(cfg)
+    model, dataset = load_model(cfg)
     env = PandaLfpWrapper(env, dataset)
 
-    lang_rollout(model, lang_encoder, env, dataset)
+    lang_rollout(model, env)
 
 
 if __name__ == "__main__":

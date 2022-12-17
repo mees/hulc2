@@ -1,17 +1,16 @@
-from collections import OrderedDict
 import logging
 from typing import Any, Dict, List, NamedTuple, Optional, Tuple, Union
 
 import hydra
-from pathlib import Path
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_info, rank_zero_only
 import torch
 import torch.distributions as D
 import torch.nn as nn
 from torch.nn.functional import binary_cross_entropy_with_logits, cross_entropy
+from hulc2.utils.data_utils import get_split_data
 
 from hulc2.models.decoders.action_decoder import ActionDecoder
 from hulc2.utils.distributions import State
@@ -85,9 +84,32 @@ class Hulc2(pl.LightningModule):
         bc_z_lang_decoder: Optional[DictConfig] = None,
         mia_lang_discriminator: Optional[DictConfig] = None,
         proj_vis_lang: Optional[DictConfig] = None,
+        aff_model: Optional[DictConfig] = None,
     ):
         super(Hulc2, self).__init__()
+        
+        # _aff_model = {}
+        # if aff_model and aff_model.transfer:
+        #     encoder = {"gripper_cam": "rgb_gripper", "static_cam": "rgb_static"}
+        #     for k in encoder.keys():
+        #         checkpoint = aff_model[k]
+        #         logger.info("loading %s aff model" % k)
+        #         _aff_model[k], run_cfg = get_aff_model(**checkpoint)
+        #         # _input_shape = _aff_model[k].model.aff_stream.input_shape
+        #         # _input_shape = [int(x) for x in _input_shape]
+        #         # perceptual_encoder[encoder[k]].input_shape=_input_shape
+        #         _depth = len(_aff_model[k].model.aff_stream.decoder_channels)
+        #         perceptual_encoder[encoder[k]].depth = _depth
+
         self.perceptual_encoder = hydra.utils.instantiate(perceptual_encoder, device=self.device)
+
+        # if aff_model and aff_model.transfer:
+        #     _static_cam_dct = _aff_model["static_cam"].model.aff_stream.unet.encoder.state_dict()
+        #     _gripper_cam_dct = _aff_model["gripper_cam"].model.aff_stream.unet.encoder.state_dict()
+        #     self.perceptual_encoder.rgb_static_encoder.net.load_state_dict(_static_cam_dct)
+        #     self.perceptual_encoder.rgb_gripper_encoder.net.load_state_dict(_gripper_cam_dct)         
+        # del _aff_model
+
         self.setup_input_sizes(
             self.perceptual_encoder,
             plan_proposal,
@@ -104,8 +126,8 @@ class Hulc2(pl.LightningModule):
         # goal encoders
         self.visual_goal = hydra.utils.instantiate(visual_goal)
         self.lang_encoder = hydra.utils.instantiate(language_encoder) if language_encoder else None
-        self.language_goal = hydra.utils.instantiate(language_goal) if language_goal else None
-
+        self.language_goal = hydra.utils.instantiate(language_goal,
+                                                     lang_net=self.lang_encoder) if language_goal else None
         # policy network
         self.action_decoder: ActionDecoder = hydra.utils.instantiate(action_decoder)
 
@@ -145,16 +167,16 @@ class Hulc2(pl.LightningModule):
         self.latent_goal = None
         self.plan = None
 
-        # for clip loss ground truth plot
+        # for clip loss
         if self.use_clip_auxiliary_loss:
             self.encoded_lang_train: Optional[torch.Tensor] = None
             self.encoded_lang_val: Optional[torch.Tensor] = None
-            self.train_lang_emb: Optional[torch.Tensor] = None
+            self.train_lang_ann: Optional[torch.Tensor] = None
             self.lang_data_val = None
             self.task_to_id: Optional[Dict] = None
             self.val_dataset = None
             self.train_lang_task_ids: Optional[np.ndarray] = None
-            self.val_lang_emb: Optional[torch.Tensor] = None
+            self.val_lang_ann: Optional[torch.Tensor] = None
             self.val_lang_task_ids: Optional[np.ndarray] = None
             # self.val_instructions = val_instructions
 
@@ -679,33 +701,20 @@ class Hulc2(pl.LightningModule):
             val_dataset = self.trainer.datamodule.val_datasets["lang"]  # type: ignore
             self.val_dataset = val_dataset
 
-            if Path(train_dataset.abs_datasets_dir / "split.json").is_file():
-                start_end_ids = get_start_end_ids(train_dataset.abs_datasets_dir)
-                lang_data = np.load(
-                    train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-                ).item()
-                lang_data_train = get_split_sequences(start_end_ids["training"], lang_data, asarray=False)
-                self.lang_data_val = get_split_sequences(start_end_ids["validation"], lang_data, asarray=False)
-            else:
-                lang_data_train = np.load(
-                    train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-                ).item()
-                self.lang_data_val = np.load(
-                    val_dataset.abs_datasets_dir / val_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
-                ).item()
-                lang_embeddings_val = np.load(
-                    val_dataset.abs_datasets_dir / val_dataset.lang_folder / "embeddings.npy", allow_pickle=True
-                ).item()
+            start_end_ids = get_start_end_ids(train_dataset.abs_datasets_dir)
+            start_end_ids["training"], _ = get_split_data(start_end_ids["training"], train_dataset.data_percent)
+
+            lang_data = np.load(
+                train_dataset.abs_datasets_dir / train_dataset.lang_folder / "auto_lang_ann.npy", allow_pickle=True
+            ).item()
+            lang_data_train = get_split_sequences(start_end_ids["training"], lang_data, asarray=False)
+            self.lang_data_val = get_split_sequences(start_end_ids["validation"], lang_data, asarray=False)
+
             train_lang_instructions = list(set(lang_data_train["language"]["ann"]))
             train_lang_ids = [
                 lang_data_train["language"]["ann"].index(instruction) for instruction in train_lang_instructions
             ]
-            self.train_lang_emb = (
-                torch.from_numpy(np.array(lang_data_train["language"]["emb"])[train_lang_ids])
-                .to(self.device)
-                .squeeze()
-                .float()
-            )
+            self.train_lang_ann = [lang_data_train["language"]["ann"][i] for i in train_lang_ids]
             train_lang_tasks = list(np.array(lang_data_train["language"]["task"])[train_lang_ids])
             train_lang_task_ids = [list(set(train_lang_tasks)).index(task) for task in train_lang_tasks]
 
@@ -722,12 +731,7 @@ class Hulc2(pl.LightningModule):
             val_lang_ids = [i for i in val_lang_ids if self.lang_data_val["language"]["task"][i] in self.task_to_id]
 
             # Get embeddings and tasks for selected indices
-            self.val_lang_emb = (
-                torch.from_numpy(np.array(self.lang_data_val["language"]["emb"])[val_lang_ids])
-                .to(self.device)
-                .squeeze()
-                .float()
-            )
+            self.val_lang_ann = [self.lang_data_val["language"]["ann"][i] for i in val_lang_ids]
             val_lang_tasks = list(np.array(self.lang_data_val["language"]["task"])[val_lang_ids])
             self.val_lang_task_ids = np.array([self.task_to_id[task] for task in val_lang_tasks])
             # val_lang_tasks = []

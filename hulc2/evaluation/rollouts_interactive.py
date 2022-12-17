@@ -15,7 +15,7 @@ import torch
 
 import hulc2
 from hulc2.evaluation.utils import imshow_tensor
-from hulc2.models.hulc2 import PlayLMP
+from hulc2.models.play_lmp import PlayLMP
 from hulc2.utils.utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)
@@ -74,7 +74,7 @@ def test_policy(input_cfg: DictConfig) -> None:
     model = model.cuda(0)
     logger.info("Successfully loaded model.")
 
-    ep_start_end_ids = np.sort(np.load(dataset.abs_datasets_dir / "ep_start_end_ids.npy"), axis=0)
+    ep_start_end_ids = np.sort(np.load(dataset.abs_datasets_dir / data_module.datasets_cfg.ep_ids_file), axis=0)
 
     for s, e in ep_start_end_ids:
         i = start_i = s

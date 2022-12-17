@@ -11,3 +11,4 @@ pad: true
 lang_folder: "lang_paraphrase-MiniLM-L3-v2"
 aux_lang_loss_window: 8
 num_workers: 2
+data_percent: ${data_percent}

@@ -64,6 +64,7 @@ class Hulc2Wrapper(gym.Wrapper):
     def step(
         self, action_tensor: torch.Tensor
     ) -> Tuple[Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]], int, bool, Dict]:
+    # -> Tuple[Dict[str, Union[torch.Tensor, Tuple[torch.Tensor, ...]]], int, bool, Dict]:
         if self.relative_actions:
             action = action_tensor.squeeze().cpu().detach().numpy()
             assert len(action) == 7
@@ -90,6 +91,7 @@ class Hulc2Wrapper(gym.Wrapper):
         scene_obs: Any = None,
         robot_obs: Any = None,
     ) -> Dict[str, Union[torch.Tensor, Dict[str, torch.Tensor]]]:
+    # ) -> Dict[str, Union[torch.Tensor, Tuple[torch.Tensor, ...]]]:
         if reset_info is not None:
             obs = self.env.reset(
                 robot_obs=reset_info["robot_obs"][batch_idx, seq_idx],

@@ -11,7 +11,6 @@ from omegaconf import OmegaConf
 import pyhash
 import torch
 
-from hulc2.models.hulc2 import PlayLMP
 from hulc2.utils.utils import add_text, format_sftp_path, upscale
 
 hasher = pyhash.fnv1_32()
