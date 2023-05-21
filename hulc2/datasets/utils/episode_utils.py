@@ -141,10 +141,10 @@ def process_actions(
 def process_language(episode: Dict[str, np.ndarray], transforms: Dict, with_lang: bool) -> Dict[str, torch.Tensor]:
     seq_lang = {"lang": torch.empty(0)}
     if with_lang:
-        lang = torch.from_numpy(episode["language"]).float()
-        if "language" in transforms:
-            lang = transforms["language"](lang)
-        # seq_lang["lang"] = episode["language"]
+        # lang = torch.from_numpy(episode["language"]).float()
+        # if "language" in transforms:
+        #     lang = transforms["language"](lang)
+        seq_lang["lang"] = episode["language"]
     return seq_lang
 
 

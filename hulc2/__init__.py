@@ -4,7 +4,7 @@
 """
 
 __version__ = "0.0.1"
-__project__ = "LfP"
+__project__ = "hulc2"
 __author__ = "Oier Mees"
 __license__ = "GPLv3"
 __email__ = "meeso@informatik.uni-freiburg.de"

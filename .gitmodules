@@ -1,3 +1,6 @@
+[submodule "calvin_env"]
+	path = calvin_env
+	url = git@github.com:JessicaBorja/calvin_env.git
 [submodule "r3m"]
 	path = r3m
 	url = git@github.com:mees/r3m.git
