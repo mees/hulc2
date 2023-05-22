@@ -1,0 +1,65 @@
+defaults:
+  - labeling: simulation_lang
+  - labeling/env@env: env_labeling
+  - labeling/scene@scene: empty_table
+  - labeling/robot@robot: panda
+  - labeling/cameras@cameras: static_and_gripper
+  - ../paths@paths: general_paths
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+#Environment
+output_size:
+  static: [150, 200]
+  gripper: 84
+mask_on_close: False
+save_viz: False
+euler_obs: True
+frames_before_saving: 5000
+viz: false
+
+language:
+  folder: lang_paraphrase-MiniLM-L3-v2
+  file: auto_lang_ann.npy
+
+# To write all data to a single split
+output_cfg:
+  single_split: null # "validation", "training"
+  multiclass: False
+
+# For collecting dataset with playdata
+dataset_name: real_world/500k_all_tasks_dataset_15hz
+play_data_dir: ${paths.datasets}/unprocessed/${dataset_name}
+
+#Output directory where dataset will be stored
+output_dir: ${paths.datasets}/${dataset_name}
+
+# Finding classes in playdata
+task_discovery:
+  dist_thresh: 0.03  # Max distance to consider that object is the same
+  sample_freq: 20   # track objects every sample_freq ts
+  frames_after_move: 3  # Find movement diretion after frames_after_move frames
+  max_n_episodes: 2  # Find clusters in subset of data
+
+# Prediction
+task_detector:
+  cluster_info_path: null
+  dataset_dir: ${output_dir}
+  k_largest: 2
+  dims: [0, 1, 2]   # x, y, z, r_x, r_y, r_z
+  clustering_method: Kmeans
+  params:
+    n_clusters: 2
+    random_state: 0
+  # clustering_method: DBSCAN
+  # params:
+  #   eps: 0.3
+  #   min_samples: 4
+    # eps: 0.08
+    # min_samples: 5
+
+
+
+hydra:
+  run:
+    dir: ./hydra_outputs/datacollection/${now:%Y-%m-%d}_${now:%H-%M-%S}

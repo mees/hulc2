@@ -1,64 +1,79 @@
 import contextlib
-import importlib
 import logging
 from pathlib import Path
 
 import cv2
-import hydra
 import numpy as np
 from numpy import pi
-from omegaconf import OmegaConf
 import pyhash
 import torch
+import os
+import re
+import hydra
+from omegaconf import ListConfig, OmegaConf
 
-from hulc2.utils.utils import add_text, format_sftp_path, upscale
 
 hasher = pyhash.fnv1_32()
 logger = logging.getLogger(__name__)
 
+def format_sftp_path(path):
+    """
+    When using network mount from nautilus, format path
+    """
+    if path.as_posix().startswith("sftp"):
+        uid = os.getuid()
+        path = Path(f"/run/user/{uid}/gvfs/sftp:host={path.as_posix()[6:]}")
+    return path
 
-def get_default_model_and_env(train_folder, dataset_path, checkpoint, env=None, lang_embeddings=None, device_id=0):
-    train_cfg_path = Path(train_folder) / ".hydra/config.yaml"
-    train_cfg_path = format_sftp_path(train_cfg_path)
-    cfg = OmegaConf.load(train_cfg_path)
-    cfg = OmegaConf.create(OmegaConf.to_yaml(cfg).replace("calvin_models.", ""))
-    lang_folder = cfg.datamodule.datasets.lang_dataset.lang_folder
-    if not hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
-        hydra.initialize("../../conf/datamodule/datasets")
-    # we don't want to use shm dataset for evaluation
-    datasets_cfg = hydra.compose("vision_lang.yaml", overrides=["lang_dataset.lang_folder=" + lang_folder])
-    # since we don't use the trainer during inference, manually set up data_module
-    cfg.datamodule.datasets = datasets_cfg
-    cfg.datamodule.root_data_dir = dataset_path
-    data_module = hydra.utils.instantiate(cfg.datamodule, num_workers=0)
-    data_module.prepare_data()
-    data_module.setup()
-    dataloader = data_module.val_dataloader()
-    dataset = dataloader.dataset.datasets["lang"]
-    device = torch.device(f"cuda:{device_id}")
 
-    if lang_embeddings is None:
-        lang_embeddings = LangEmbeddings(dataset.abs_datasets_dir, lang_folder, device=device)
+def add_title(img, caption, font_scale=0.6, bottom=False):
+    h, w, c = img.shape
 
-    if env is None:
-        rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "conf/callbacks/rollout/default.yaml")
-        env = hydra.utils.instantiate(rollout_cfg.env_cfg, dataset, device, show_gui=False)
+    # Add caption rectangle
+    title_h = 45
+    # Add caption
+    thickness = 1
+    (w_txt, h_txt), _ = cv2.getTextSize(caption, cv2.FONT_HERSHEY_DUPLEX, font_scale, thickness)
 
-    checkpoint = format_sftp_path(checkpoint)
-    print(f"Loading model from {checkpoint}")
-    # hack for gcbc
-    model_name = cfg.model["_target_"].split(".")[-1]
-    modul_name = cfg.model["_target_"].split(model_name)[0][:-1]
-    models_m = importlib.import_module(modul_name)
-    model = getattr(models_m, model_name).load_from_checkpoint(checkpoint)
-    # model = PlayLMP.load_from_checkpoint(checkpoint)
-    model.freeze()
-    if cfg.model.action_decoder.get("load_action_bounds", False):
-        model.action_decoder._setup_action_bounds(cfg.datamodule.root_data_dir, None, None, True)
-    model = model.cuda(device)
-    print("Successfully loaded model.")
+    if bottom:
+        rectangle = np.zeros((title_h, w, c), dtype=img.dtype)
+        out_img = np.vstack([img, rectangle])
+        coord = ((w - w_txt)//2, h + (title_h + h_txt)//2)
+    else:
+        rectangle = np.zeros((title_h, w, c), dtype=img.dtype)
+        out_img = np.vstack([rectangle, img])
+        coord = ((w - w_txt)//2, (title_h + h_txt)//2)
 
-    return model, env, data_module, lang_embeddings
+    scale = 1 if img.dtype == "float64" else 255
+    out_img = cv2.putText(
+        out_img,
+        caption,
+        org=coord,
+        fontFace=cv2.FONT_HERSHEY_DUPLEX,
+        fontScale=font_scale,
+        color=(1*scale, 1*scale, 1*scale),
+        thickness=thickness,
+        lineType=cv2.LINE_AA
+    )
+    return out_img
+
+
+def add_text(img, lang_text):
+    height, width, _ = img.shape
+    if lang_text != "":
+        coord = (1, int(height - 10))
+        font_scale = (0.7 / 500) * width
+        thickness = 1
+        cv2.putText(
+            img,
+            text=lang_text,
+            org=coord,
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=font_scale,
+            color=(0, 0, 0),
+            thickness=thickness,
+            lineType=cv2.LINE_AA,
+        )
 
 
 def join_vis_lang(img, lang_text):
@@ -81,11 +96,10 @@ class LangEmbeddings:
         return {"lang": torch.from_numpy(self.lang_embeddings[task]).to(self.device).squeeze(0).float()}
 
 
-def imshow_tensor(window, img_tensor, wait=0, resize=True, unnormalize=True, keypoints=None, text=None):
+def imshow_tensor(window, img_tensor, wait=0, resize=True, keypoints=None, text=None):
     img_tensor = img_tensor.squeeze()
     img = np.transpose(img_tensor.cpu().numpy(), (1, 2, 0))
-    if unnormalize:
-        img = np.clip(((img / 2) + 0.5) * 255, 0, 255).astype(np.uint8)
+    img = np.clip(((img / 2) + 0.5) * 255, 0, 255).astype(np.uint8)
 
     if keypoints is not None:
         key_coords = np.clip(keypoints * 200 + 100, 0, 200)
@@ -97,10 +111,10 @@ def imshow_tensor(window, img_tensor, wait=0, resize=True, unnormalize=True, key
         add_text(img, text)
 
     if resize:
-        cv2.imshow(window, upscale(img[:, :, ::-1]))
+        cv2.imshow(window, cv2.resize(img[:, :, ::-1], (500, 500)))
     else:
         cv2.imshow(window, img[:, :, ::-1])
-    return cv2.waitKey(wait) % 256
+    cv2.waitKey(wait)
 
 
 def print_task_log(demo_task_counter, live_task_counter, mod):
@@ -199,3 +213,29 @@ def get_env_state_for_initial_condition(initial_condition):
         scene_obs[23] = np.random.uniform(*block_rot_z_range)
 
     return robot_obs, scene_obs
+
+
+def get_env(dataset_path, obs_space=None, show_gui=True, scene=None, camera_conf=None,**kwargs):
+    from pathlib import Path
+
+    from omegaconf import OmegaConf
+
+    render_conf = OmegaConf.load(Path(dataset_path) / ".hydra" / "merged_config.yaml")
+    if camera_conf is not None:
+        render_conf.cameras = camera_conf
+    if scene is not None:
+        render_conf.scene = scene
+    if obs_space is not None:
+        exclude_keys = set(render_conf.cameras.keys()) - {
+            re.split("_", key)[1] for key in obs_space["rgb_obs"] + obs_space["depth_obs"]
+        }
+        for k in exclude_keys:
+            del render_conf.cameras[k]
+    if "scene" in kwargs:
+        import calvin_env
+        scene_cfg = OmegaConf.load(Path(calvin_env.__file__).parents[1] / "conf/scene" / f"{kwargs['scene']}.yaml")
+        OmegaConf.merge(render_conf, scene_cfg)
+    if not hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
+        hydra.initialize(".")
+    env = hydra.utils.instantiate(render_conf.env, show_gui=show_gui, use_vr=False, use_scene_info=True)
+    return env

@@ -12,7 +12,7 @@ from torchvision.transforms.functional import resize
 import wandb
 import wandb.util
 
-from hulc2.utils.utils import add_text
+from hulc2.utils.img_utils import add_text
 
 log = logging.getLogger(__name__)
 

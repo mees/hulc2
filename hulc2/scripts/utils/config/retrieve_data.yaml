@@ -1,0 +1,20 @@
+defaults:
+  - lang_model: bert
+
+ignore_empty_tasks: True
+
+lang_model:
+  nlp_model: paraphrase-MiniLM-L3-v2
+
+save_path: ./annotations
+database_path: webapp/database.db
+# Original dataset to be reduced...
+# Only needs to load ep_start_end_ids.npy
+dataset_dir: ../datasets/unprocessed/real_world/real_world_play_processed
+
+
+#-- Hydra config --#
+hydra_outputs: ./hydra_outputs/tmp/
+hydra:
+  run:
+    dir: ${hydra_outputs}/${now:%Y-%m-%d}/${now:%H-%M-%S} # Output

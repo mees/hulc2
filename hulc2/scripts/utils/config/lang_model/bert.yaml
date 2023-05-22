@@ -1,0 +1,2 @@
+_target_: webapp.language_encoders.sbert.SBert
+_recursive_: False

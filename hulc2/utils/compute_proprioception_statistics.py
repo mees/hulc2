@@ -6,7 +6,7 @@ import numpy as np
 import tqdm
 
 import hulc2
-from hulc2.datasets.base_dataset import load_npz, load_pkl
+from hulc2.affordance.datasets.base_dataset import load_npz, load_pkl
 
 TRAINING_DIR: str = "training"
 

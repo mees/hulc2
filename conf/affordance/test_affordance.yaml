@@ -1,0 +1,45 @@
+defaults:
+  - paths: general_paths
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+#
+save_viz: True
+debug: False
+
+# folders
+checkpoint:
+  train_folder: ~/logs/hulc2/aff_model/2022-07-02/17-01-30_aff_model
+  model_name: val_err.ckpt
+
+dataset_name: calvin_lang_MoCEndPt
+aff_detection:
+  dataset:
+    _recursive_: False
+    data_dir: ${paths.datasets}/${dataset_name}
+    cam: static
+    data_percent: 1.0
+    episodes_file: episodes_split.json
+    img_resize:
+      static: 224  # clip img size
+      gripper: 96
+      all: 100
+  hough_voting:
+    skip_pixels: 3
+    inlier_threshold: 0.8
+    angle_discretization: 100
+    inlier_distance: 16
+    percentage_threshold: 0.4
+    object_center_kernel_radius: 16
+
+
+dataloader:
+  num_workers: 4
+  batch_size: 4
+  pin_memory: true
+
+#-- Hydra config --#
+hydra_outputs: ./hydra_outputs/aff_preds/
+hydra:
+  run:
+    dir: ${hydra_outputs}/${now:%Y-%m-%d}/${now:%H-%M-%S} # Output

@@ -3,8 +3,11 @@ from pathlib import Path
 import shutil
 import time
 from typing import Dict, List, Union
+import importlib
+from omegaconf import OmegaConf
+import os
 
-import cv2
+import logging
 import git
 import hydra
 import numpy as np
@@ -12,6 +15,7 @@ import pytorch_lightning
 from pytorch_lightning.utilities.cloud_io import load as pl_load
 import torch
 import tqdm
+logger = logging.getLogger(__name__)
 
 
 def timeit(method):
@@ -154,34 +158,6 @@ def get_portion_of_batch_ids(percentage: float, batch_size: int) -> np.ndarray:
     return np.unique(indices.astype(np.int64))
 
 
-def add_text(img, lang_text):
-    height, width, _ = img.shape
-    if lang_text != "":
-        coord = (1, int(height - 10))
-        font_scale = (0.7 / 500) * width
-        thickness = 1
-        cv2.putText(
-            img,
-            text=lang_text,
-            org=coord,
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=font_scale,
-            color=(0, 0, 0),
-            thickness=thickness * 3,
-            lineType=cv2.LINE_AA,
-        )
-        cv2.putText(
-            img,
-            text=lang_text,
-            org=coord,
-            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-            fontScale=font_scale,
-            color=(255, 255, 255),
-            thickness=thickness,
-            lineType=cv2.LINE_AA,
-        )
-
-
 def format_sftp_path(path):
     """
     When using network mount from nautilus, format path
@@ -191,9 +167,65 @@ def format_sftp_path(path):
         path = Path(f"/run/user/{uid}/gvfs/sftp:host={path.as_posix()[6:]}")
     return path
 
+def get_abspath(path_str):
+    path_str = os.path.expanduser(path_str)
+    if not os.path.isabs(path_str):
+        hydra_cfg = hydra.utils.HydraConfig().cfg
+        if hydra_cfg is not None:
+            cwd = hydra.utils.get_original_cwd()
+        else:
+            cwd = os.getcwd()
+        path_str = os.path.join(cwd, path_str)
+        path_str = os.path.abspath(path_str)
+    return path_str
 
-def upscale(img, max_width=500):
-    res = img.shape[:2][::-1]
-    scale = max_width / max(res)
-    new_res = tuple((np.array(res) * scale).astype(int))
-    return cv2.resize(img, new_res)
+
+def get_aff_model(train_folder, model_name, img_resize=None, eval=True):
+    hydra_run_dir = get_abspath(train_folder)
+    logger.info("loading aff model from %s" % hydra_run_dir)
+    hydra_cfg_path = os.path.join(hydra_run_dir, ".hydra/config.yaml")
+    if os.path.exists(hydra_cfg_path):
+        run_cfg = OmegaConf.load(hydra_cfg_path)
+    else:
+        print("path does not exist %s" % hydra_cfg_path)
+        return None, None
+
+    # Load model
+    model = load_aff_model(hydra_run_dir,
+                           model_name,
+                           transforms=run_cfg.aff_detection.dataset.transforms['validation'],
+                           eval=eval)
+    return model, run_cfg
+
+
+def load_aff_model(hydra_run_dir, model_name, eval=False, **kwargs):
+    # Load model
+    checkpoint_path = os.path.join(hydra_run_dir, 'checkpoints')
+    checkpoint_path = os.path.join(checkpoint_path, model_name)
+    if(os.path.isfile(checkpoint_path)):
+        aff_cfg = os.path.join(hydra_run_dir, ".hydra/config.yaml")
+        if os.path.isfile(aff_cfg):
+            train_cfg = OmegaConf.load(aff_cfg)
+            _model_cfg = train_cfg.aff_detection
+        if eval:
+            _model_cfg.model_cfg.freeze_encoder.lang=True
+            _model_cfg.model_cfg.freeze_encoder.aff=True
+            _model_cfg.model_cfg.freeze_encoder.depth=True
+        # Get class
+        model_class = _model_cfg._target_.split('.')
+        model_file = '.'.join(_model_cfg._target_.split('.')[:-1])
+        model_file = importlib.import_module(model_file)
+        model_class = getattr(model_file, model_class[-1])
+
+        # Instantiate
+        model = model_class.load_from_checkpoint(checkpoint_path, strict=False, **kwargs)
+
+        # Override default voting layer parameters
+        if 'hough_voting' in kwargs and 'hough_voting' in model.model_cfg:
+            model.init_voting_layer(kwargs['hough_voting'])
+        logger.info("Model successfully loaded: %s" % checkpoint_path)
+    else:
+        logger.info("No checkpoint file found, loading untrained model: %s" % checkpoint_path)
+    if eval:
+        model.eval()
+    return model

@@ -1,0 +1,4 @@
+# Paths to where episodes_split.json is stored for each dataset
+data_lst:
+  - ../datasets/calvin_langDepthEndPt/training
+  - ../datasets/calvin_langDepthEndPt/validation

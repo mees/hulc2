@@ -1,4 +1,4 @@
-_target_: hulc2.datasets.npz_dataset.NpzDataset
+_target_: hulc2.affordance.datasets.npz_dataset.NpzDataset
 key: "lang"
 save_format: "npz"
 batch_size: 32

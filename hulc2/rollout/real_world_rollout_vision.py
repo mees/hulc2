@@ -8,7 +8,7 @@ from robot_io.utils.utils import FpsController
 
 from hulc2.evaluation.utils import imshow_tensor
 from hulc2.models.encoders.language_network import SBert
-from hulc2.models.hulc2 import PlayLMP
+from hulc2.models.hulc2 import Hulc2
 from hulc2.utils.utils import format_sftp_path, get_checkpoints_for_epochs
 from hulc2.wrappers.panda_lfp_wrapper import PandaLfpWrapper
 

@@ -68,7 +68,7 @@ def process_rgb(
 
     seq_rgb_obs_dict = {}
     for _, rgb_obs_key in enumerate(rgb_obs_keys):
-        rgb_obs = episode[rgb_obs_key]
+        rgb_obs = episode[rgb_obs_key]  # H, W, C
         # expand dims for single environment obs
         if len(rgb_obs.shape) != 4:
             rgb_obs = np.expand_dims(rgb_obs, axis=0)
@@ -141,10 +141,10 @@ def process_actions(
 def process_language(episode: Dict[str, np.ndarray], transforms: Dict, with_lang: bool) -> Dict[str, torch.Tensor]:
     seq_lang = {"lang": torch.empty(0)}
     if with_lang:
-        # lang = torch.from_numpy(episode["language"]).float()
-        # if "language" in transforms:
-        #     lang = transforms["language"](lang)
-        seq_lang["lang"] = episode["language"]
+        lang = torch.from_numpy(episode["language"])
+        if "language" in transforms:
+            lang = transforms["language"](lang)
+        seq_lang["lang"] = lang
     return seq_lang
 
 
@@ -155,13 +155,13 @@ def get_state_info_dict(episode: Dict[str, np.ndarray]) -> Dict[str, Dict[str, t
     """
     return {
         "state_info": {
-            "robot_obs": torch.from_numpy(episode["robot_obs"])
-            #            "scene_obs": torch.from_numpy(episode["scene_obs"]),
+            "robot_obs": torch.from_numpy(episode["robot_obs"]),
+            "scene_obs": torch.from_numpy(episode["scene_obs"]),
         }
     }
 
 
-def load_dataset_statistics(root_data_path, transforms):
+def load_dataset_statistics(train_dataset_dir, val_dataset_dir, transforms):
     """
     Tries to load statistics.yaml in every dataset folder in order to update the transforms hardcoded in the
     hydra config file. If no statistics.yaml exists, nothing is changed
@@ -173,13 +173,12 @@ def load_dataset_statistics(root_data_path, transforms):
     Returns:
         transforms: potentially updated transforms
     """
-    paths = {"train": root_data_path,
-            "val": root_data_path}
+    paths = {"train": train_dataset_dir,
+             "val": val_dataset_dir}
     for dataset_type in ["train", "val"]:
+        statistics_filepath = Path(paths[dataset_type]) / "statistics.yaml"
         try:
-            filepath = Path(paths[dataset_type]) / "statistics.yaml"
-            filepath = filepath.resolve()
-            statistics = OmegaConf.load(filepath)
+            statistics = OmegaConf.load(statistics_filepath.as_posix())
             # Hack for maintaining two repositories with transforms
             statistics = OmegaConf.create(OmegaConf.to_yaml(statistics).replace("calvin_agent", "hulc2"))
             # this ugly piece of code only exists because OmegaConf actually can't merge ListConfigs.
@@ -192,14 +191,15 @@ def load_dataset_statistics(root_data_path, transforms):
                     for dataset_trans in dataset_transforms:
                         exists = False
                         for i, conf_trans in enumerate(conf_transforms):
+                            conf_trans["_target_"] = conf_trans["_target_"].replace('calvin_agent', 'hulc2')
                             if dataset_trans["_target_"] == conf_trans["_target_"]:
                                 exists = True
                                 transforms[dataset_type][modality][i] = dataset_trans
                                 break
                         if not exists:
                             transforms[dataset_type][modality] = ListConfig([*conf_transforms, dataset_trans])
-            logger.info("loading statistics.yaml from %s: " % filepath)
+            logger.info("loading statistics.yaml from %s: " % statistics_filepath)
         except FileNotFoundError:
-            logger.warning("Could not load statistics.yaml from %s:" % filepath)
+            logger.warning("Could not load statistics.yaml from %s:" % statistics_filepath)
             pass
     return transforms

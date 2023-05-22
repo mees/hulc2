@@ -1,0 +1,59 @@
+open_drawer:
+  - "Opening the drawer"
+
+close_drawer:
+  - "Closing the drawer"
+
+move_slide_left:
+  - "Moving sliding door to the left"
+
+move_slide_right:
+  - "Moving sliding door to the right"
+
+turn_on_[x]_led:
+  - "turn on the [x] light"
+
+turn_off_[x]_led:
+  - "turn off the [x] light"
+
+rotate_[x]_block_right:
+  - "grasp the [x] block, then rotate it right"
+
+rotate_[x]_block_left:
+  - "grasp the [x] block, then rotate it left"
+
+push_[x]_block_left:
+  - "push the [x] block towards the left"
+
+push_[x]_block_right:
+  - "push the [x] block towards the right"
+
+place_[x]_box:
+  - "Place the [x] block inside the box"
+
+place_[x]_drawer:
+  - "Place the [x] block inside the drawer"
+
+place_[x]_left_cabinet:
+  - "Place the [x] block inside the left cabinet"
+
+place_[x]_right_cabinet:
+  - "Place the [x] block inside the right cabinet"
+
+place_[x]_table:
+  - "Place the [x] block on the table"
+
+place_[x]_drawer_top:
+  - "Place the [x] block on top of the drawer"
+
+unstack_[x]_block:
+  - "Unstack the [x] block"
+
+lift_[x]_block:
+  - "Lift the [x] block"
+
+push_[x]_block_in_drawer:
+  - "push the [x] block inside the drawer"
+
+stack_[x]_on_[y]:
+  - "Stack the [x] block on top of the [y] block"

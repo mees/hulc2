@@ -12,8 +12,8 @@ from torch.utils.data import DataLoader
 import torchvision
 
 import hulc2
-from hulc2.datasets.utils.episode_utils import load_dataset_statistics
-from hulc2.datasets.utils.shared_memory_loader import SharedMemoryLoader
+from hulc2.affordance.datasets.utils.episode_utils import load_dataset_statistics
+from hulc2.affordance.datasets.utils.shared_memory_loader import SharedMemoryLoader
 
 logger = logging.getLogger(__name__)
 DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})

@@ -1,0 +1,11 @@
+model:
+  _target_: hulc2.affordance.clip_detector.CLIPPointDetector
+  resize: 224
+  clip_model: "RN50"  # ["RN50", "RN101", "RN50x4", "RN50x16"]
+  saliency_layer: "layer4"  # ["layer4", "layer3", "layer2", "layer1"]
+  blur: False
+  viz: True
+
+img_size: 224
+defaults: 
+  - /transforms: rgb

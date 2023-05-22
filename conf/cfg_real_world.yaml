@@ -1,0 +1,48 @@
+defaults:
+  - datamodule: default
+  - robot: panda_frankx_interface_policy
+  - env: robot_io_env
+  - cams: camera_manager
+  - agent: real_world
+  - paths: general_paths
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+  - override datamodule/datasets: vision_only
+  - _self_
+
+data_path: ${paths.vr_data}
+model_name: real_world
+train_folder: ???
+max_timesteps: 100
+agent:
+  _target_: hulc2.agents.real_world_agent.AffHULCAgent
+  _recursive_: False
+  save_viz: False
+  viz_obs: True
+  offset: [-0.05, -0.05, 0.13]  # Relative to end effector
+  aff_cfg:
+    train_folder: ~/logs/hulc2/aff_ablation/2022-06-15/18-23-49_aff_ablation
+      # train_folder: ./hydra_outputs/affordance_model/2022-03-09/01-38-55_aff_rl
+    model_name: last.ckpt
+
+model_free:
+  train_folder: /home/meeso/real_aff_lang_lfp/old_models_missing_annotations/lang_lfp_v1
+  checkpoint: 17
+seed: 42
+env:
+  freq: 15
+panda_env_wrapper:
+  max_rel_pos: 0.02
+  max_rel_orn: 0.05
+
+save_dir: ./hydra_outputs/real_world_inference
+hydra:
+  run:
+    dir: ${save_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  searchpath:
+    - pkg://robot_io.conf
+    - pkg://lfp.conf
+
+  sweep:
+    dir: ${log_dir}/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.override_dirname}

@@ -1,0 +1,4 @@
+vision_net: rn
+lang_enc: sbert
+defaults:
+  - /transforms: rgb_randShift_color

@@ -3,12 +3,12 @@ from typing import Dict
 
 import torch
 
-from hulc2.models.play_lmp import PlayLMP
+from hulc2.models.hulc2 import Hulc2
 
 logger = logging.getLogger(__name__)
 
 
-class GCBC(PlayLMP):
+class GCBC(Hulc2):
     """
     Goal-conditioned behavior cloning.
     """

@@ -1,0 +1,4 @@
+vision_net: r3m_rn18
+lang_enc: sbert
+defaults:
+  - /transforms: r3m

@@ -13,9 +13,8 @@ from omegaconf.errors import MissingMandatoryValue
 from pytorch_lightning import seed_everything
 import torch
 
-import hulc2
 from hulc2.evaluation.utils import imshow_tensor
-from hulc2.models.play_lmp import PlayLMP
+from hulc2.models.hulc2 import Hulc2
 from hulc2.utils.utils import get_last_checkpoint
 
 logger = logging.getLogger(__name__)
@@ -68,7 +67,7 @@ def test_policy(input_cfg: DictConfig) -> None:
     tasks = hydra.utils.instantiate(cfg.callbacks.rollout.tasks)
     checkpoint = get_checkpoint(cfg)
     logger.info("Loading model from checkpoint.")
-    model = PlayLMP.load_from_checkpoint(checkpoint)
+    model = Hulc2.load_from_checkpoint(checkpoint)
     model.freeze()
     # model.action_decoder._setup_action_bounds(cfg.datamodule.root_data_dir, None, None)
     model = model.cuda(0)

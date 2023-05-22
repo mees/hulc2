@@ -1,0 +1,27 @@
+# Unet Resnet 18 with respective decoder channels
+# CLIP as sentence encoder
+# Affordance binary mask prediction
+name: rn18_clip_mask
+
+model:
+  _target_: hulc2.affordance.mask_aff_lang_detector.MaskAffLangDetector
+  _recursive_: False
+  cfg:
+    attn_stream_fusion_type: 'add'
+    lang_fusion_type: 'mult'
+    streams: ${aff_detection.streams}
+    batchnorm: False
+    loss:
+      centers: 2.5
+      dice: 5
+      ce_loss: 1
+      affordance:
+        add_dice: true
+        ce_class_weights: [0.2, 0.8]
+    unet_cfg:
+      decoder_channels: [256, 128, 64, 32]
+
+img_size: 224
+defaults:
+  - mask_data
+  - streams: rn18_clip_lingunet

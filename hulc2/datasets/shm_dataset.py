@@ -5,8 +5,8 @@ from typing import Dict, List, Optional
 import numpy as np
 from pytorch_lightning.utilities import rank_zero_only
 
-from hulc2.datasets.base_dataset import BaseDataset, get_validation_window_size
-from hulc2.datasets.utils.episode_utils import (
+from hulc2.affordance.datasets.base_dataset import BaseDataset, get_validation_window_size
+from hulc2.affordance.datasets.utils.episode_utils import (
     get_state_info_dict,
     process_actions,
     process_depth,
