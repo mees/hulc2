@@ -105,7 +105,7 @@ def setup_logger(cfg: DictConfig, model: LightningModule) -> LightningLoggerBase
     """
     pathlib_cwd = Path.cwd()
     if "group" in cfg.logger:
-        cfg.logger.group = pathlib_cwd.parent.name
+        # cfg.logger.group = pathlib_cwd.parent.name
         cfg.logger.name = pathlib_cwd.parent.name + "/" + pathlib_cwd.name
         cfg.logger.id = cfg.logger.name.replace("/", "_")
         train_logger = hydra.utils.instantiate(cfg.logger)

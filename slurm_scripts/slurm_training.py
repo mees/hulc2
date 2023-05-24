@@ -15,7 +15,7 @@ if default_log_dir == "/tmp":
     print("CAUTION: logging to /tmp")
 parser = argparse.ArgumentParser(description="Parse slurm parameters and hydra config overrides")
 
-parser.add_argument("--script", type=str, default="./sbatch_lfp.sh")
+parser.add_argument("--script", type=str, default="./sbatch_hulc2.sh")
 parser.add_argument("--train_file", type=str, default="../hulc2/training.py")
 parser.add_argument("-l", "--log_dir", type=str, default=default_log_dir)
 parser.add_argument("-j", "--job_name", type=str, default="play_training")

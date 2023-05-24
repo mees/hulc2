@@ -4,23 +4,22 @@ from torch import nn, Tensor
 
 from sentence_transformers import SentenceTransformer
 from typing import List
-from hulc2.affordance.models.language_encoders.base_lang_encoder import LangEncoder
+from tqdm.autonotebook import trange
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
-class SBertLang(LangEncoder):
-    def __init__(self, freeze_backbone=True, pretrained=True) -> None:
-        super(SBertLang, self).__init__(freeze_backbone, pretrained)
-
-    def _load_model(self):
+class SBertLang(nn.Module):
+    def __init__(self, nlp_model: str, freeze_backbone=True) -> None:
+        super(SBertLang, self).__init__()
+        self.freeze_backbone = freeze_backbone
+        self.model = SentenceTransformer(nlp_model)
         _embd_dim = 384
-        self.model = SentenceTransformer("paraphrase-MiniLM-L3-v2")
-        self.text_fc = nn.Linear(_embd_dim, 1024)
+        # self.text_fc = nn.Linear(_embd_dim, 1024)
 
-    def encode_text(self, x: List) -> torch.Tensor:
+    def forward(self, x: List) -> torch.Tensor:
         enc = self.encode(x)
-        enc = self.text_fc(enc)
-        return enc, None, None
+        # enc = self.text_fc(enc)
+        return enc # torch.unsqueeze(enc, 1)
 
     def encode(self, sentences: List[str],
                normalize_embeddings: bool = False) -> Tensor:
@@ -41,7 +40,7 @@ class SBertLang(LangEncoder):
         sentences_sorted = [sentences[idx] for idx in length_sorted_idx]
 
         features = self.model.tokenize(sentences_sorted)
-        features = self.batch_to_device(features, self.model.device)
+        features = self.batch_to_device(features, self.model._target_device)
 
         with torch.set_grad_enabled(not self.freeze_backbone):
             out_features = self.model.forward(features)

@@ -8,7 +8,7 @@ from torch.distributions import Normal, Independent
 import torchvision.models as models
 
 import numpy as np
-from hulc2.utils.utils import calc_cnn_out_size
+from hulc2.utils.tensor_utils import calc_cnn_out_size
 
 
 class DepthEstimationLogistics(nn.Module):

@@ -1,4 +1,4 @@
-_target_: lfp.models.perceptual_encoders.concat_encoders.ConcatEncoders
+_target_: hulc2.models.perceptual_encoders.concat_encoders.ConcatEncoders
 _recursive_: false
 
 defaults:

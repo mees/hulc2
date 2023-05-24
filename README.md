@@ -49,7 +49,7 @@ If you want to get started without downloading the whole dataset, use the argume
 ### Pre-trained Models
 
 ## Training
-**1.** Affordance Model
+**1.** [Affordance Model] (./docs/)
 
 **2.** Model-free Policy
 By default a training for the CALVIN simulated environment will be started:

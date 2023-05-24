@@ -1,4 +1,4 @@
-_target_: lfp.models.perceptual_encoders.vision_resnet_aff.VisionResnetAff
+_target_: hulc2.models.perceptual_encoders.vision_resnet_aff.VisionResnetAff
 visual_features: 64
 freeze_backbone: True
 input_shape: [200, 200, 3]

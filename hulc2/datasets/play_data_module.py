@@ -1,14 +1,16 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict, List
+from typing import Any, Dict, List, Sized, Union
 
 import hydra
 import numpy as np
-from omegaconf import DictConfig, OmegaConf
+from omegaconf import DictConfig, ListConfig, OmegaConf
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.supporters import CombinedLoader
-from torch.utils.data import DataLoader
+import torch
+import torch.distributed as dist
+from torch.utils.data import DataLoader, Dataset, DistributedSampler, RandomSampler, Sampler, SequentialSampler
 import torchvision
 
 import hulc2
@@ -20,7 +22,7 @@ DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})
 ONE_EP_DATASET_URL = "http://www.informatik.uni-freiburg.de/~meeso/50steps.tar.xz"
 
 
-class Hulc2SimdDataModule(pl.LightningDataModule):
+class PlayDataModule(pl.LightningDataModule):
     def __init__(
         self,
         datasets: DictConfig,
@@ -40,11 +42,9 @@ class Hulc2SimdDataModule(pl.LightningDataModule):
         root_data_path = Path(root_data_dir)
         if not root_data_path.is_absolute():
             root_data_path = Path(hulc2.__file__).parent / root_data_path
-        # Split is in split.json instead of separate folders
         self.root_data_path = root_data_path
-
-        self.training_dir = root_data_path / "training"
-        self.val_dir = root_data_path / "validation"
+        # self.training_dir = root_data_path / "training"
+        # self.val_dir = root_data_path / "validation"
         self.shuffle_val = shuffle_val
         self.modalities: List[str] = []
         self.transforms = transforms
@@ -56,17 +56,8 @@ class Hulc2SimdDataModule(pl.LightningDataModule):
 
         # download and unpack images
         if not dataset_exist:
-            if "CI" not in os.environ:
-                print(f"No dataset found in {self.training_dir}.")
-                print("For information how to download to full CALVIN dataset, please visit")
-                print("https://github.com/mees/calvin/tree/main/dataset")
-                print("Do you wish to download small debug dataset to continue training?")
-                s = input("YES / no")
-                if s == "no":
-                    exit()
-            logger.info(f"downloading dataset to {self.training_dir} and {self.val_dir}")
-            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.training_dir)
-            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.val_dir)
+            logger.info(f"downloading dataset to {self.root_data_path}")
+            torchvision.datasets.utils.download_and_extract_archive(ONE_EP_DATASET_URL, self.root_data_path)
 
         if self.use_shm:
             train_shmem_loader = SharedMemoryLoader(self.datasets_cfg, self.root_data_path, split="training")

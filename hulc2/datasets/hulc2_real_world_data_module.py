@@ -14,8 +14,8 @@ from torch.utils.data import DataLoader, Dataset, DistributedSampler, RandomSamp
 import torchvision
 
 import hulc2
-from hulc2.affordance.datasets.utils.episode_utils import load_dataset_statistics
-from hulc2.affordance.datasets.utils.shared_memory_loader import SharedMemoryLoader
+from hulc2.datasets.utils.episode_utils import load_dataset_statistics
+from hulc2.datasets.utils.shared_memory_loader import SharedMemoryLoader
 
 logger = logging.getLogger(__name__)
 DEFAULT_TRANSFORM = OmegaConf.create({"train": None, "val": None})
@@ -69,7 +69,9 @@ class Hulc2RealWorldDataModule(pl.LightningDataModule):
             save_lang_data(train_shm_lookup, val_shm_lookup)
 
     def setup(self, stage=None):
-        transforms = load_dataset_statistics(self.root_data_path, self.transforms)
+        transforms = load_dataset_statistics(self.root_data_path / "training",
+                                             self.root_data_path / "validation",
+                                             self.transforms)
 
         self.train_transforms = {
             cam: [hydra.utils.instantiate(transform, _convert_="partial") for transform in transforms.train[cam]]

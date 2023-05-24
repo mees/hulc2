@@ -1,4 +1,4 @@
-_target_: hulc2.affordance.datasets.shm_dataset.ShmDataset
+_target_: hulc2.datasets.shm_dataset.ShmDataset
 key: "lang"
 save_format: "npz"
 batch_size: 32

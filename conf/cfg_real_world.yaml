@@ -41,7 +41,7 @@ hydra:
     dir: ${save_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}
   searchpath:
     - pkg://robot_io.conf
-    - pkg://lfp.conf
+    - pkg://hulc2.conf
 
   sweep:
     dir: ${log_dir}/runs/${now:%Y-%m-%d}/${now:%H-%M-%S}

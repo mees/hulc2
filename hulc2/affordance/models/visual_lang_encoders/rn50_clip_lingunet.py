@@ -7,7 +7,7 @@ from hulc2.affordance.models.core.unet import Up
 from hulc2.affordance.models.core import fusion
 from hulc2.affordance.models.visual_lang_encoders.base_lingunet import BaseLingunet
 
-from hulc2.utils.utils import calc_cnn_out_size
+from hulc2.utils.tensor_utils import calc_cnn_out_size
 
 
 class LangFusionBlock(nn.Module):

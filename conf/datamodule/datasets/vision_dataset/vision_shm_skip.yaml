@@ -1,4 +1,4 @@
-_target_: hulc2.affordance.datasets.shm_dataset_skip.ShmDatasetSkip
+_target_: hulc2.datasets.shm_dataset_skip.ShmDatasetSkip
 key: "vis"
 save_format: "npz"
 batch_size: 32

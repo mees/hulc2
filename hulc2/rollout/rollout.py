@@ -13,7 +13,7 @@ import torch
 import torch.distributed as dist
 
 import hulc2
-from hulc2.affordance.datasets.base_dataset import get_validation_window_size
+from hulc2.datasets.base_dataset import get_validation_window_size
 from hulc2.rollout.rollout_video import RolloutVideo
 from hulc2.utils.utils import get_portion_of_batch_ids
 

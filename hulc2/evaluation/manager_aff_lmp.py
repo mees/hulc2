@@ -93,6 +93,8 @@ class PolicyManager:
         # since we don't use the trainer during inference, manually set up data_module
         cfg.datamodule.datasets = datasets_cfg
         cfg.datamodule.root_data_dir = dataset_path
+
+        cfg.datamodule._target_ = cfg.datamodule._target_.replace("lfp", "hulc2")
         data_module = hydra.utils.instantiate(cfg.datamodule, num_workers=0)
         data_module.prepare_data()
         data_module.setup()
@@ -106,7 +108,7 @@ class PolicyManager:
         if env is None:
             env = get_env(dataset.abs_datasets_dir, show_gui=False, obs_space=dataset.observation_space,
                           scene=scene, camera_conf=camera_conf)
-            rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "config/lfp/rollout/aff_lfp.yaml")
+            rollout_cfg = OmegaConf.load(Path(__file__).parents[2] / "config/hulc2/rollout/aff_hulc2.yaml")
             env = hydra.utils.instantiate(rollout_cfg.env_cfg, env=env, device=device)
 
         checkpoint = format_sftp_path(checkpoint)

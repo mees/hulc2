@@ -15,7 +15,7 @@ from pytorch_lightning import Callback, LightningModule, Trainer
 from tqdm import tqdm
 from hulc2.utils.data_utils import get_split_data
 from hulc2.utils.split_dataset import get_split_sequences
-from hulc2.affordance.datasets.shm_dataset import ShmDataset
+from hulc2.datasets.shm_dataset import ShmDataset
 from hulc2.utils.split_dataset import get_split_sequences, get_start_end_ids
 
 log = logging.getLogger(__name__)
