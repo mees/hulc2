@@ -47,7 +47,11 @@ sh download_data.sh D | ABC | ABCD | debug
 If you want to get started without downloading the whole dataset, use the argument `debug` to download a small debug dataset (1.3 GB).
 
 ### Pre-trained Models
-
+Download the [HULC2 model checkpoints](http://hulc2.cs.uni-freiburg.de/model_weights/real_world_checkpoints.zip) trained on the [real world play dataset](https://www.kaggle.com/datasets/oiermees/taco-robot).
+```
+$ wget http://hulc2.cs.uni-freiburg.de/model_weights/real_world_checkpoints.zip
+$ unzip real_world_checkpoints.zip
+```
 ## Training
 **1.** [Affordance Model] (./docs/)
 
