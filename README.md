@@ -86,6 +86,11 @@ License: [MIT](https://github.com/mees/calvin/blob/main/LICENSE)
 Original:  [https://github.com/mees/hulc](https://github.com/mees/hulc)
 License: [MIT](https://github.com/mees/hulc/blob/main/LICENSE)
 
+#### VAPO
+Original:  [https://github.com/mees/vapo](https://github.com/mees/vapo)
+License: [MIT](https://github.com/mees/vapo/blob/main/LICENSE)
+
+
 #### Sentence-Transformers
 Original:  [https://github.com/UKPLab/sentence-transformers](https://github.com/UKPLab/sentence-transformers)
 License: [Apache 2.0](https://github.com/UKPLab/sentence-transformers/blob/master/LICENSE)
@@ -96,11 +101,12 @@ If you find the code useful, please cite:
 
 **HULC++**
 ```bibtex
-@article{mees22hulc2,
-  title={Grounding  Language  with  Visual  Affordances  over  Unstructured  Data},
-  author={Oier Mees and Jessica Borja-Diaz and Wolfram Burgard},
-  journal={arXiv preprint arXiv:2210.01911},
-  year={2022}
+@inproceedings{mees23hulc2,
+title={Grounding  Language  with  Visual  Affordances  over  Unstructured  Data},
+author={Oier Mees and Jessica Borja-Diaz and Wolfram Burgard},
+booktitle = {Proceedings of the IEEE International Conference on Robotics and Automation (ICRA)},
+year={2023},
+address = {London, UK}
 }
 
 ```
