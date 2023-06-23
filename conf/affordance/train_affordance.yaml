@@ -1,0 +1,63 @@
+defaults:
+  - aff_detection: r3m
+  - ../paths@paths: general_paths
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+save_viz: True
+
+# folders
+run_name: ${aff_detection.name}
+load_from_last_ckpt: True
+checkpoint:
+  path: ./
+  model_name: last.ckpt
+
+trainer:
+  # script configs
+  accelerator: gpu
+  devices: 1
+  strategy: ddp
+  max_epochs: 30
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 1
+  precision: 16
+
+dataset_name: calvin_lang_MoCEndPt
+aff_detection:
+  depth_dist: gaussian # logistic / gaussian
+  normalize_depth: True
+  optimizer:
+    lr: 1e-4
+  loss_weights:
+    aff: 0.1
+    depth: 0.9
+  dataset:
+    _recursive_: False
+    data_dir: ${paths.datasets}/${dataset_name}
+    cam: static
+    data_percent: 1.0
+    img_resize:
+      static: 224
+      gripper: 96
+      all: 100
+
+dataloader:
+  num_workers: 4
+  batch_size: 32
+  pin_memory: true
+
+wandb:
+  logger:
+    name: ${run_name}
+    entity: affordance
+    project: aff_lang
+    offline: False
+    group: ${aff_detection.dataset.cam}_${aff_detection.dataset.data_percent}p
+  saver: ${aff_detection.wandb_saver}
+
+#-- Hydra config --#
+hydra_outputs: ./hydra_outputs/affordance_model/
+hydra:
+  run:
+    dir: ${hydra_outputs}/${now:%Y-%m-%d}/${now:%H-%M-%S} # Output

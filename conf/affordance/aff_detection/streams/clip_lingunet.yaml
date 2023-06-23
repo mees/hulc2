@@ -1,0 +1,4 @@
+vision_net: clip
+lang_enc: clip
+defaults:
+  - /transforms: clip_color

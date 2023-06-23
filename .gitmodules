@@ -1,0 +1,12 @@
+[submodule "calvin_env"]
+	path = calvin_env
+	url = git@github.com:JessicaBorja/calvin_env.git
+[submodule "r3m"]
+	path = r3m
+	url = git@github.com:mees/r3m.git
+[submodule "LangAnnotationApp"]
+	path = LangAnnotationApp
+	url = git@github.com:mees/LanguageAnnotationWebApp.git
+[submodule "robot_io"]
+	path = robot_io
+	url = git@github.com:mees/robot_io.git

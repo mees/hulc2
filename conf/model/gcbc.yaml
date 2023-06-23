@@ -1,0 +1,4 @@
+defaults:
+  - calvin_hulc++
+
+_target_: hulc2.models.gcbc.GCBC

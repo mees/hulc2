@@ -1,0 +1,77 @@
+defaults:
+  - paths: general_paths
+  - transforms: clip_real_world
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+save_viz: True
+
+# folders
+run_name: depth
+load_from_last_ckpt: True
+checkpoint:
+  path: ./ # ${hydra_outputs}/2022-01-16/14-42-24_aff_rl
+  model_name: last.ckpt # epoch=49-step=34449.ckpt
+
+trainer:
+  # script configs
+  gpus: -1
+  max_epochs: 15
+  check_val_every_n_epoch: 1
+  num_sanity_val_steps: 1
+  strategy: ddp
+  precision: 32
+
+dataset_name: calvin_lang_MoCEndPt
+model:
+  lr: 1e-05
+  depth_dist: logistic  # logistic / gaussian
+  lang_fusion_type: mult
+  normalize_depth: False
+
+aff_detection:
+  img_size: 224
+
+dataset:
+  _recursive_: False
+  _target_: hulc2.affordance.datasets.pixel_label.PixeLabelDataLang
+  transforms: ${transforms}
+  radius:
+    static: 16
+    gripper: 10
+  data_dir: ${paths.datasets}/${dataset_name}
+  cam: static
+  img_resize:
+    static: 224  # clip img size
+    gripper: 96
+    all: 100
+
+dataloader:
+  num_workers: 4
+  batch_size: 32
+  pin_memory: true
+
+wandb:
+  logger:
+    name: ${run_name}
+    entity: jessibd
+    project: depth_est
+    offline: False
+  saver:
+    val_loss:
+      monitor: 'Validation/total_loss'
+      save_top_k: 2
+      mode: min
+      verbose: True
+    val_err:
+      monitor: 'Validation/depth_err'
+      save_top_k: 2
+      mode: min
+      verbose: True
+      save_last: True
+
+#-- Hydra config --#
+hydra_outputs: ./hydra_outputs/affordance_model/
+hydra:
+  run:
+    dir: ${hydra_outputs}/${now:%Y-%m-%d}/${now:%H-%M-%S} # Output

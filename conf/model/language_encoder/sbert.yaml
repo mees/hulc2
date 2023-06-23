@@ -1,0 +1,3 @@
+_target_: hulc2.affordance.models.language_encoders.sbert_lang_encoder.SBertLang
+freeze_backbone: True
+nlp_model: "paraphrase-MiniLM-L3-v2"

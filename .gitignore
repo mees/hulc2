@@ -1,0 +1,3 @@
+*.egg-info
+.vscode/
+hydra_outputs/

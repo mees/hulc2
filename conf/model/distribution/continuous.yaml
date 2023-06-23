@@ -1,0 +1,3 @@
+_target_: hulc2.utils.distributions.Distribution
+dist: "continuous"
+plan_features: 256

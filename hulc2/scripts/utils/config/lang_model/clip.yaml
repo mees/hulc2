@@ -1,0 +1,3 @@
+_target_: webapp.language_encoders.clip.CLIPLang
+freeze_backbone: True
+model_name: RN50

@@ -1,0 +1,5 @@
+# Paths to where episodes_split.json is stored for each dataset
+# Relative to the main hulc2 directory
+data_lst:
+  - ../../../datasets/calvin_langDepthEndPt/training
+  - ../../../datasets/calvin_langDepthEndPt/validation

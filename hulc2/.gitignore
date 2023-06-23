@@ -1,0 +1,11 @@
+data
+play_data/
+__pycache__/
+relay-policy-learning/
+puppet/
+mjrl/
+results/
+runs/
+analysis/videos/
+analysis/tsne_results/proposal_clusters/
+analysis/tsne_results/unseen_data_collection/

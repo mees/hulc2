@@ -1,0 +1,9 @@
+# @package _global_
+defaults:
+  - _self_
+
+src_dirs:
+  - "/work/dlclarge2/roseteb-thesis/dataset/validation"
+  - "/work/dlclarge2/roseteb-thesis/dataset/erick_data3"
+
+dest: "/work/dlclarge2/roseteb-thesis/dataset/new_validation"

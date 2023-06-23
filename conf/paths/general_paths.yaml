@@ -1,0 +1,8 @@
+parent_folder: ../
+vr_data: ${paths.parent_folder}/VREnv/data/
+
+# Trained affordance models
+trained_models: ${paths.vapo_path}/trained_models/
+
+# For training affordance model and policy
+datasets: /tmp/datasets/

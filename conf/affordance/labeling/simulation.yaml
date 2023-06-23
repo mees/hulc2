@@ -1,0 +1,9 @@
+split_by_episodes: True
+mode: "simulation"
+back_frames: [5, 50]
+fixed_pt_del_radius: 0.09  # Meters
+remove_blank_mask_instances: False
+min_labels: 4
+label_size:
+  static: 14
+  gripper: 30

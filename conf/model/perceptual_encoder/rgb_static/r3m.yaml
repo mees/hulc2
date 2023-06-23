@@ -1,0 +1,4 @@
+_target_: hulc2.models.perceptual_encoders.vision_r3m.VisionR3M
+visual_features: 64
+freeze_backbone: True
+resnet_model: "resnet18"

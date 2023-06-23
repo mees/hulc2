@@ -1,0 +1,5 @@
+accelerator: gpu
+devices: 1
+precision: 16
+max_epochs: 100
+sync_batchnorm: false

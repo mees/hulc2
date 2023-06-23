@@ -1,0 +1,4 @@
+defaults:
+  - checkpoint: all
+  - kl_schedule: constant
+  - shm_signal: default

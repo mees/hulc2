@@ -1,0 +1,7 @@
+_target_: hulc2.agents.lmp_agent.PlayLMPAgent
+_recursive_: False
+dataset_path: ${paths.datasets}/unprocessed/task_D_D
+checkpoint:
+  train_folder: ./trained_agents/D_D_static_rgb_baseline
+  model_name: mcil_baseline.ckpt
+offset: ${gripper_offset}

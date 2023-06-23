@@ -1,0 +1,26 @@
+# Unet Resnet 18 with respective decoder channels
+# BERT as sentence encoder
+# Single pixel prediction
+_target_: hulc2.affordance.pixel_aff_lang_detector.PixelAffLangDetector
+_recursive_: False
+name: rn50_bert_pixel
+img_size: 224
+
+model_cfg:
+  freeze_encoder:
+    lang: True
+    aff: True
+    depth: True
+  attn_stream_fusion_type: 'add'
+  lang_fusion_type: 'mult'
+  streams: ${aff_detection.streams}
+  streams:
+    lang_enc: sbert
+  batchnorm: False
+  encoder_name: resnet50
+  unet_cfg:
+    decoder_channels: [256, 128, 64, 32]
+
+defaults:
+  - pixel_data
+  - streams: rn_bert_lingunet

@@ -1,0 +1,40 @@
+defaults:
+  - paths: general_paths
+  - simulation/robot@robot: panda_longer_finger
+  - simulation/scene@scene: calvin_scene_D
+  - simulation/env@env: env
+  - simulation/cameras@cameras: high_res
+  - simulation/agent@agent: play_lmp
+  - override hydra/hydra_logging: colorlog
+  - override hydra/job_logging: colorlog
+
+data_path: ${paths.vr_data}
+model_name: full
+
+max_timesteps: 364
+gripper_offset: [0.0, -0.025, 0.05]
+policy_checkpoint:
+  train_folder: ./trained_agents/lfp
+  model_name: epoch=30.ckpt
+
+agent:
+  viz_obs: True
+
+aff_detection:
+  checkpoint:
+    train_folder: ~/logs/hulc2/aff_ablation/2022-06-15/18-23-49_aff_ablation
+    # train_folder: ./hydra_outputs/affordance_model/2022-03-09/01-38-55_aff_rl
+    model_name: val_err.ckpt
+
+hough_voting:
+  skip_pixels: 4
+  inlier_threshold: 0.7
+  angle_discretization: 100
+  inlier_distance: 15
+  percentage_threshold: 0.3
+  object_center_kernel_radius: 10
+
+save_dir: ./hydra_outputs/calvin
+hydra:
+  run:
+    dir: ${save_dir}/${now:%Y-%m-%d}/${now:%H-%M-%S}

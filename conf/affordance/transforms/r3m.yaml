@@ -1,0 +1,23 @@
+training:
+  - _target_: torchvision.transforms.Resize
+    size: ${aff_detection.img_size}
+  - _target_: hulc2.affordance.datasets.transforms.RandomShiftsAug
+    pad: 5
+  - _target_: hulc2.affordance.datasets.transforms.ScaleImageTensor  # Scale 0-255 to 0-1
+  - _target_: hulc2.affordance.datasets.transforms.ColorTransform
+    contrast: 0.05
+    brightness: 0.05
+    hue: 0.02
+    prob: 1
+  - _target_: torchvision.transforms.Normalize
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+validation:
+  # - _target_: torch.nn.Identity
+  - _target_: torchvision.transforms.Resize
+    size: ${aff_detection.img_size}
+  - _target_: hulc2.affordance.datasets.transforms.ScaleImageTensor  # Scale 0-255 to 0-1
+  - _target_: torchvision.transforms.Normalize
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]

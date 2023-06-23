@@ -1,0 +1,21 @@
+defaults:
+  - perceptual_encoder: gripper_cam
+  - plan_proposal: default
+  - plan_recognition: transformers
+  - distribution:  discrete
+  - visual_goal: default
+  - language_encoder: sbert
+  - language_goal: default
+  - action_decoder: logistic_decoder_rnn_calvin
+  - optimizer: adam
+  - lr_scheduler: constant
+  - proj_vis_lang: default
+
+_target_: hulc2.models.hulc2.Hulc2
+_recursive_: false
+
+kl_beta: ${loss.kl_beta}
+kl_balancing_mix: ${loss.kl_balancing_mix}
+replan_freq: 30
+use_clip_auxiliary_loss: true
+clip_auxiliary_loss_beta: ${loss.clip_auxiliary_loss_beta}
