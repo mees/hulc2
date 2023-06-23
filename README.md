@@ -6,6 +6,8 @@
 
 [Oier Mees](https://www.oiermees.com/), Jessica Borja-Diaz, [Wolfram Burgard](http://www2.informatik.uni-freiburg.de/~burgard)
 
+#### HULC++ was nominated as finalist for the Best Paper Award in Robot Learning at the IEEE International Conference on Robotics and Automation (ICRA) 2023 
+
 
 We present **HULC++** (**H**ierarchical **U**niversal **L**anguage **C**onditioned Policies) 2.0, a novel approach to efficiently  learn general-purpose language-conditioned robot skills from
 unstructured, offline and reset-free data by exploiting a self-supervised visuo-lingual affordance model,  which requires annotating as little as 1% of the total data with language.
