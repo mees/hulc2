@@ -17,8 +17,6 @@ from hulc2.evaluation.manager_aff_lmp import PolicyManager as AffLMPManager
 from hulc2.evaluation.multistep_sequences import get_sequences
 from hulc2.evaluation.utils import get_env_state_for_initial_condition
 
-# from hulc2.evaluation.manager_lmp import PolicyManager as LMPManager
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,13 +30,6 @@ class Evaluation:
             save_viz=args.save_viz,
             use_affordances=self.use_affordances,
         )
-        # if use_affordances:
-        #     self.policy_manager = AffLMPManager(train_folder=args.aff_train_folder,
-        #                                         checkpoint=args.aff_checkpoint,
-        #                                         debug=args.debug,
-        #                                         use_affordances=True)
-        # else:
-        #     self.policy_manager = LMPManager()
         self.save_viz = args.save_viz
         self.n_completed = args.n_completed
         scene = args.scene
@@ -158,9 +149,9 @@ class Evaluation:
 
     def evaluate_policy(self, args):
         conf_dir = Path(__file__).absolute().parents[2] / "config"
-        task_cfg = OmegaConf.load(conf_dir / "lfp/rollout/tasks/new_playtable_tasks.yaml")
+        task_cfg = OmegaConf.load(conf_dir / "callbacks/rollout/tasks/new_playtable_tasks.yaml")
         task_oracle = hydra.utils.instantiate(task_cfg)
-        val_annotations = OmegaConf.load(conf_dir / "lfp/annotations/new_playtable_validation.yaml")
+        val_annotations = OmegaConf.load(conf_dir / "annotations/new_playtable_validation.yaml")
 
         eval_sequences = get_sequences(args.num_sequences)
         # eval_sequences = [eval_sequences[i] for i in [5,12,24,30,33,34,51,52,53,61,77,80]]

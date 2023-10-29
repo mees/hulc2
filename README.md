@@ -71,17 +71,24 @@ model/language_encoder=none`
 
 
 ## Evaluation
-See detailed inference instructions on the [CALVIN repo](https://github.com/mees/calvin#muscle-evaluation-the-calvin-challenge).
+See detailed inference instructions on the [CALVIN repo](https://github.com/mees/calvin#muscle-evaluation-the-calvin-challenge) to evaluate on the CALVIN benchmark.
 ```
-python hulc++/evaluation/evaluate_policy.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
+python hulc2/evaluation/evaluate_policy.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
 ```
-Set `--train_folder $HULC2_ROOT/checkpoints/HULC2_D_D` to evaluate our [pre-trained models](#pre-trained-models).
 
 Optional arguments:
 
 - `--checkpoint <PATH/TO/CHECKPOINT>`: by default, the evaluation loads the last checkpoint in the training log directory.
 You can instead specify the path to another checkpoint by adding this to the evaluation command.
 - `--debug`: print debug information and visualize environment.
+
+To evaluate the full approach on the real world with a Panda robot, use:
+```
+python hulc2/rollout/real_world_eval_combined.py --dataset_path <PATH/TO/DATASET> --train_folder <PATH/TO/TRAINING/FOLDER>
+```
+You might need to specify the paths to your checkpoints in the [cfg_high_level_rw](conf/cfg_high_level_rw.yaml) config.
+
+Set `--train_folder $HULC2_ROOT/real_world_checkpoints/aff_model_single` to evaluate our [pre-trained models](#pre-trained-models).
 
 ## Acknowledgements
 
